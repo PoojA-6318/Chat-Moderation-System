@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeLe - Application Status</title>
+    <link rel="stylesheet" href="../auth-styles/status.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="status-container">
+        <!-- Header -->
+        <div class="status-header">
+            <a href="login.html" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+                Back
+            </a>
+            <div class="logo">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>WeLe<span class="logo-dot">.</span></span>
+            </div>
+            <div class="header-badge">
+                <i class="fas fa-graduation-cap"></i>
+                Teacher Portal
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="status-card">
+            <!-- Decorative Elements -->
+            <div class="decor-circle circle-1"></div>
+            <div class="decor-circle circle-2"></div>
+            
+            <!-- Status Check Section -->
+            <div class="status-check">
+                <div class="section-icon">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <h1>Check application status</h1>
+                <p class="section-subtitle">Enter your email to track your teacher verification</p>
+                
+                <form class="status-form" onsubmit="checkStatus(event)">
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" id="status-email" placeholder="sarah@example.com" required>
+                    </div>
+                    <button type="submit" class="btn-check">
+                        <span>Check status</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Loading State -->
+            <div id="status-loading" class="status-loading" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p>Checking application status...</p>
+            </div>
+
+            <!-- Status Result - Pending -->
+            <div id="pending-status" class="status-result pending-result" style="display: none;">
+                <div class="result-header pending">
+                    <div class="status-badge-large">
+                        <i class="fas fa-clock"></i>
+                        <span>Under Review</span>
+                    </div>
+                    <div class="application-id" id="pending-app-id">
+                        <i class="fas fa-hashtag"></i>
+                        <span>APP-2026-0342</span>
+                    </div>
+                </div>
+
+                <div class="submission-info">
+                    <div class="info-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <div>
+                            <span class="info-label">Submitted on</span>
+                            <span class="info-value" id="pending-submission-date">March 10, 2026 · 10:30 AM</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Countdown Timer -->
+                <div class="countdown-section">
+                    <div class="countdown-header">
+                        <i class="fas fa-hourglass-half"></i>
+                        <span>Time remaining for review</span>
+                    </div>
+                    <div class="countdown-timer" id="countdown">
+                        <div class="time-block">
+                            <span class="time-value" id="hours">23</span>
+                            <span class="time-label">Hours</span>
+                        </div>
+                        <span class="time-separator">:</span>
+                        <div class="time-block">
+                            <span class="time-value" id="minutes">59</span>
+                            <span class="time-label">Minutes</span>
+                        </div>
+                        <span class="time-separator">:</span>
+                        <div class="time-block">
+                            <span class="time-value" id="seconds">59</span>
+                            <span class="time-label">Seconds</span>
+                        </div>
+                    </div>
+                    <div class="deadline-note">
+                        <i class="fas fa-bell"></i>
+                        <span>Admin will respond within 24 hours of submission</span>
+                    </div>
+                </div>
+
+                <!-- Progress Timeline -->
+                <div class="timeline">
+                    <div class="timeline-item completed">
+                        <div class="timeline-marker">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Application submitted</h4>
+                            <p id="pending-timeline-submission">March 10, 2026 · 10:30 AM</p>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item active">
+                        <div class="timeline-marker">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Under review</h4>
+                            <p>Your application is in queue · Estimated completion in <span id="time-remaining">23h 59m</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-marker">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Final decision</h4>
+                            <p>You'll be notified via email once reviewed</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-message">
+                    <i class="fas fa-info-circle"></i>
+                    <p>Your application is in queue. You'll receive an email at <strong id="pending-email">sarah@example.com</strong> once reviewed.</p>
+                </div>
+            </div>
+
+            <!-- Status Result - Approved -->
+            <div id="approved-status" class="status-result approved-result" style="display: none;">
+                <div class="result-header approved">
+                    <div class="status-badge-large approved">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Approved</span>
+                    </div>
+                    <div class="application-id" id="approved-app-id">
+                        <i class="fas fa-hashtag"></i>
+                        <span>APP-2026-0342</span>
+                    </div>
+                </div>
+
+                <div class="success-animation">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+
+                <h2 class="approved-title">Congratulations, you're verified! 🎉</h2>
+                <p class="approved-subtitle">Your teacher application has been approved</p>
+
+                <div class="verification-badge">
+                    <i class="fas fa-certificate"></i>
+                    <span>Verified Teacher</span>
+                </div>
+
+                <div class="timeline">
+                    <div class="timeline-item completed">
+                        <div class="timeline-marker">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Application submitted</h4>
+                            <p id="approved-submission-date">March 10, 2026 · 10:30 AM</p>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item completed">
+                        <div class="timeline-marker">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Under review</h4>
+                            <p id="approved-review-date">March 11, 2026 · 3:45 PM</p>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item completed">
+                        <div class="timeline-marker">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Verified on</h4>
+                            <p id="approved-decision-date">March 12, 2026 · 2:30 PM</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="window.location.href='../index.html'">
+                        <i class="fas fa-chalkboard"></i>
+                        Go to Dashboard
+                    </button>
+                    <button class="btn-secondary" onclick="window.location.href='../index.html?create-room=true'">
+                        <i class="fas fa-plus-circle"></i>
+                        Create Your First Room
+                    </button>
+                </div>
+            </div>
+
+            <!-- Status Result - Rejected -->
+            <div id="rejected-status" class="status-result rejected-result" style="display: none;">
+                <div class="result-header rejected">
+                    <div class="status-badge-large rejected">
+                        <i class="fas fa-times-circle"></i>
+                        <span>Not Approved</span>
+                    </div>
+                    <div class="application-id" id="rejected-app-id">
+                        <i class="fas fa-hashtag"></i>
+                        <span>APP-2026-0342</span>
+                    </div>
+                </div>
+
+                <div class="rejection-icon">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+
+                <h2 class="rejected-title">Application not approved</h2>
+                <p class="rejected-subtitle">We couldn't verify your teacher credentials at this time</p>
+
+                <!-- Rejection Reason Card -->
+                <div class="rejection-card">
+                    <div class="rejection-card-header">
+                        <i class="fas fa-file-certificate"></i>
+                        <h3>Reason for rejection</h3>
+                    </div>
+                    <div class="rejection-card-body">
+                        <p id="rejection-reason">We couldn't verify your teaching certificate. The document uploaded appears to be unclear or incomplete.</p>
+                    </div>
+                    <div class="rejection-card-footer">
+                        <i class="fas fa-pencil-alt"></i>
+                        <p><strong>Admin note:</strong> <span id="admin-note">The certificate image was blurry and the institution name wasn't visible. Please upload a clearer document.</span></p>
+                    </div>
+                </div>
+
+                <!-- Timeline -->
+                <div class="timeline">
+                    <div class="timeline-item completed">
+                        <div class="timeline-marker">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Application submitted</h4>
+                            <p id="rejected-submission-date">March 10, 2026 · 10:30 AM</p>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item completed">
+                        <div class="timeline-marker">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Under review</h4>
+                            <p id="rejected-review-date">March 11, 2026 · 11:20 AM</p>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item completed rejected">
+                        <div class="timeline-marker">
+                            <i class="fas fa-times"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h4>Decision made</h4>
+                            <p id="rejected-decision-date">March 12, 2026 · 4:15 PM</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rejection-help">
+                    <i class="fas fa-lightbulb"></i>
+                    <div>
+                        <h4>How to fix this?</h4>
+                        <p>Upload a clear, color scan of your official teaching certificate or degree. Ensure all text and seals are visible.</p>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="window.location.href='apply.html'">
+                        <i class="fas fa-redo"></i>
+                        Apply Again
+                    </button>
+                    <button class="btn-secondary" onclick="window.location.href='mailto:support@wele.com'">
+                        <i class="fas fa-headset"></i>
+                        Contact Support
+                    </button>
+                </div>
+            </div>
+
+            <!-- Not Found -->
+            <div id="not-found-status" class="status-result not-found" style="display: none;">
+                <div class="not-found-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h2>No application found</h2>
+                <p>We couldn't find an application with this email address.</p>
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="window.location.href='apply.html'">
+                        Apply as teacher
+                    </button>
+                    <button class="btn-secondary" onclick="document.getElementById('status-email').value = ''; hideAllResults();">
+                        Try again
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================
+        // STATUS CHECK LOGIC
+        // =========================================
+        
+        let countdownInterval = null;
+
+        // Check URL parameters on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const email = urlParams.get('email');
+            if (email) {
+                document.getElementById('status-email').value = email;
+                document.getElementById('status-form').dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // Check status function
+        function checkStatus(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('status-email').value;
+            
+            // Hide all results
+            hideAllResults();
+            
+            // Show loading
+            document.getElementById('status-loading').style.display = 'block';
+            
+            // Simulate API call
+            setTimeout(() => {
+                document.getElementById('status-loading').style.display = 'none';
+                
+                // Get applications from localStorage
+                const applications = JSON.parse(localStorage.getItem('wele-teacher-applications') || '[]');
+                const application = applications.find(app => app.email === email);
+                
+                if (application) {
+                    showApplicationStatus(application);
+                } else {
+                    document.getElementById('not-found-status').style.display = 'block';
+                }
+            }, 1000);
+        }
+
+        // Show application status
+        function showApplicationStatus(application) {
+            if (application.status === 'pending') {
+                showPendingStatus(application);
+            } else if (application.status === 'approved') {
+                showApprovedStatus(application);
+            } else if (application.status === 'rejected') {
+                showRejectedStatus(application);
+            }
+        }
+
+        // Show pending status
+        function showPendingStatus(application) {
+            const pendingEl = document.getElementById('pending-status');
+            pendingEl.style.display = 'block';
+            
+            // Update content
+            document.getElementById('pending-app-id').querySelector('span').textContent = application.id;
+            document.getElementById('pending-email').textContent = application.email;
+            
+            const submittedDate = new Date(application.submittedAt).toLocaleString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            document.getElementById('pending-submission-date').textContent = submittedDate;
+            document.getElementById('pending-timeline-submission').textContent = submittedDate;
+            
+            // Start countdown
+            startCountdown(application.submittedAt);
+        }
+
+        // Show approved status
+        function showApprovedStatus(application) {
+            const approvedEl = document.getElementById('approved-status');
+            approvedEl.style.display = 'block';
+            
+            document.getElementById('approved-app-id').querySelector('span').textContent = application.id;
+            
+            // Calculate dates (mock)
+            const submitted = new Date(application.submittedAt);
+            const reviewed = new Date(submitted.getTime() + 24 * 60 * 60 * 1000);
+            const approved = new Date(reviewed.getTime() + 12 * 60 * 60 * 1000);
+            
+            document.getElementById('approved-submission-date').textContent = formatDate(submitted);
+            document.getElementById('approved-review-date').textContent = formatDate(reviewed);
+            document.getElementById('approved-decision-date').textContent = formatDate(approved);
+        }
+
+        // Show rejected status
+        function showRejectedStatus(application) {
+            const rejectedEl = document.getElementById('rejected-status');
+            rejectedEl.style.display = 'block';
+            
+            document.getElementById('rejected-app-id').querySelector('span').textContent = application.id;
+            
+            // Set rejection reasons
+            document.getElementById('rejection-reason').textContent = application.rejectionReason || 'We couldn\'t verify your teaching certificate.';
+            document.getElementById('admin-note').textContent = application.adminNote || 'The document was unclear. Please upload a clearer version.';
+            
+            // Calculate dates
+            const submitted = new Date(application.submittedAt);
+            const reviewed = new Date(submitted.getTime() + 24 * 60 * 60 * 1000);
+            const rejected = new Date(reviewed.getTime() + 6 * 60 * 60 * 1000);
+            
+            document.getElementById('rejected-submission-date').textContent = formatDate(submitted);
+            document.getElementById('rejected-review-date').textContent = formatDate(reviewed);
+            document.getElementById('rejected-decision-date').textContent = formatDate(rejected);
+        }
+
+        // Format date
+        function formatDate(date) {
+            return date.toLocaleString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Start countdown timer
+        function startCountdown(submittedAt) {
+            if (countdownInterval) clearInterval(countdownInterval);
+            
+            const targetTime = new Date(submittedAt).getTime() + (24 * 60 * 60 * 1000);
+            
+            function updateCountdown() {
+                const now = new Date().getTime();
+                const distance = targetTime - now;
+                
+                const hours = Math.floor(distance / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                
+                if (distance < 0) {
+                    clearInterval(countdownInterval);
+                    document.getElementById('hours').textContent = '00';
+                    document.getElementById('minutes').textContent = '00';
+                    document.getElementById('seconds').textContent = '00';
+                    document.getElementById('time-remaining').textContent = '0h 0m';
+                    
+                    document.querySelector('.deadline-note').innerHTML = `
+                        <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
+                        <span>Review time exceeded. Please contact support.</span>
+                    `;
+                    return;
+                }
+                
+                document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+                document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+                document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+                document.getElementById('time-remaining').textContent = `${hours}h ${minutes}m`;
+            }
+            
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
+        }
+
+        // Hide all result sections
+        function hideAllResults() {
+            document.getElementById('pending-status').style.display = 'none';
+            document.getElementById('approved-status').style.display = 'none';
+            document.getElementById('rejected-status').style.display = 'none';
+            document.getElementById('not-found-status').style.display = 'none';
+            document.getElementById('status-loading').style.display = 'none';
+            
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+        }
+
+        // Pre-fill for demo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add sample data for demo if none exists
+            const applications = JSON.parse(localStorage.getItem('wele-teacher-applications') || '[]');
+            
+            if (applications.length === 0) {
+                // Add sample pending application
+                applications.push({
+                    id: 'APP-2026-0342',
+                    name: 'Sarah Johnson',
+                    email: 'sarah@example.com',
+                    expertise: 'UX Design',
+                    experience: '5-10 years',
+                    qualification: 'M.Des',
+                    status: 'pending',
+                    submittedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString()
+                });
+                
+                // Add sample approved application
+                applications.push({
+                    id: 'APP-2026-0343',
+                    name: 'Michael Chen',
+                    email: 'michael@example.com',
+                    expertise: 'Data Science',
+                    experience: '10+ years',
+                    qualification: 'PhD',
+                    status: 'approved',
+                    submittedAt: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString()
+                });
+                
+                // Add sample rejected application
+                applications.push({
+                    id: 'APP-2026-0344',
+                    name: 'Priya Patel',
+                    email: 'priya@example.com',
+                    expertise: 'Cloud Computing',
+                    experience: '3-5 years',
+                    qualification: 'M.Tech',
+                    status: 'rejected',
+                    submittedAt: new Date(Date.now() - 96 * 60 * 60 * 1000).toISOString(),
+                    rejectionReason: 'Unable to verify teaching certificate. The document uploaded appears to be incomplete.',
+                    adminNote: 'The certificate was missing the issuing authority\'s signature and seal.'
+                });
+                
+                localStorage.setItem('wele-teacher-applications', JSON.stringify(applications));
+            }
+        });
+    </script>
+</body>
+</html>
