@@ -1,0 +1,44 @@
+/* ── Dark Mode Toggle ─────────────────────────────────────────────────────── */
+.dm-toggle {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.dm-track {
+    display: flex;
+    align-items: center;
+    width: 52px;
+    height: 28px;
+    border-radius: 100px;
+    padding: 3px;
+    transition: background 0.3s ease;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    box-shadow: 0 2px 8px rgba(251, 191, 36, 0.35);
+}
+
+.dm-dark .dm-track {
+    background: linear-gradient(135deg, #334155, #1e293b);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+    justify-content: flex-end;
+}
+
+.dm-light .dm-track {
+    justify-content: flex-start;
+}
+
+.dm-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    line-height: 1;
+}

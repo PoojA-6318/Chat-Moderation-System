@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WeLe AI Moderation — Full Blueprint (MongoDB Only)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Manrope:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08090f;
+  --surface: #0f1019;
+  --surface2: #161724;
+  --surface3: #1c1e30;
+  --border: #22253a;
+  --border2: #2e3352;
+  --text: #bdc8e8;
+  --muted: #535e80;
+  --bright: #e4ecff;
+  --accent: #4fffb0;
+  --accent2: #ff6b6b;
+  --accent3: #ffd166;
+  --blue: #5bc0eb;
+  --purple: #9b72cf;
+  --pink: #ff9ff3;
+  --orange: #ff9f43;
+  --mono: 'IBM Plex Mono', 'Courier New', monospace;
+  --sans: 'Manrope', 'Segoe UI', sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);line-height:1.75;font-size:15px;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+/* ── HERO ── */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:5rem 2rem;position:relative;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background:
+  radial-gradient(ellipse 80% 60% at 50% 0%,rgba(79,255,176,0.06) 0%,transparent 60%),
+  radial-gradient(ellipse 60% 40% at 20% 80%,rgba(91,192,235,0.04) 0%,transparent 50%),
+  radial-gradient(ellipse 50% 50% at 80% 60%,rgba(255,107,107,0.04) 0%,transparent 50%);
+}
+.grid-lines{position:absolute;inset:0;background-image:linear-gradient(rgba(79,255,176,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(79,255,176,0.03) 1px,transparent 1px);background-size:48px 48px;}
+.hero-eyebrow{font-family:var(--mono);font-size:0.68rem;letter-spacing:4px;text-transform:uppercase;color:var(--accent);border:1px solid rgba(79,255,176,0.2);padding:0.4rem 1.3rem;border-radius:100px;margin-bottom:2rem;position:relative;display:inline-block;}
+.hero h1{font-family:var(--sans);font-size:clamp(2.8rem,6vw,5.5rem);font-weight:900;line-height:1.0;color:var(--bright);position:relative;max-width:900px;}
+.hero h1 em{color:var(--accent);font-style:normal;}
+.hero h1 span{color:var(--accent3);}
+.hero-desc{font-size:1.05rem;color:var(--muted);max-width:650px;margin:1.5rem auto 2.5rem;position:relative;}
+.hero-pills{display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:center;position:relative;}
+.pill{font-family:var(--mono);font-size:0.68rem;font-weight:600;padding:0.3rem 0.85rem;border-radius:5px;}
+.p-g{background:rgba(79,255,176,0.08);color:var(--accent);border:1px solid rgba(79,255,176,0.2);}
+.p-b{background:rgba(91,192,235,0.08);color:var(--blue);border:1px solid rgba(91,192,235,0.2);}
+.p-r{background:rgba(255,107,107,0.08);color:var(--accent2);border:1px solid rgba(255,107,107,0.2);}
+.p-y{background:rgba(255,209,102,0.08);color:var(--accent3);border:1px solid rgba(255,209,102,0.2);}
+.p-p{background:rgba(155,114,207,0.08);color:var(--purple);border:1px solid rgba(155,114,207,0.2);}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1080px;margin:0 auto;padding:0 1.5rem 6rem;}
+.section{margin-bottom:5rem;}
+.sec-label{font-family:var(--mono);font-size:0.62rem;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:0.5rem;}
+.sec-title{font-size:clamp(1.7rem,3vw,2.5rem);font-weight:800;color:var(--bright);margin-bottom:0.4rem;}
+.sec-sub{color:var(--muted);font-size:0.95rem;margin-bottom:2.5rem;max-width:580px;}
+
+/* ── WHY MONGODB ONLY ── */
+.mongo-why{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;}
+@media(max-width:640px){.mongo-why{grid-template-columns:1fr;}}
+.mw-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.3rem;}
+.mw-card h3{font-size:0.95rem;font-weight:700;color:var(--bright);margin-bottom:0.5rem;}
+.mw-card p{font-size:0.85rem;color:var(--muted);line-height:1.6;}
+.cross-card{border-color:rgba(255,107,107,0.3);background:rgba(255,107,107,0.04);}
+.cross-card h3{color:var(--accent2);}
+.check-card{border-color:rgba(79,255,176,0.25);background:rgba(79,255,176,0.03);}
+.check-card h3{color:var(--accent);}
+
+/* ── MONGO SCHEMA CARDS ── */
+.schema-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin:1.5rem 0;}
+@media(max-width:640px){.schema-grid{grid-template-columns:1fr;}}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.sc-head{padding:0.65rem 1rem;font-family:var(--mono);font-size:0.78rem;font-weight:600;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0.5rem;}
+.sc-head-g{background:rgba(79,255,176,0.08);color:var(--accent);}
+.sc-head-b{background:rgba(91,192,235,0.08);color:var(--blue);}
+.sc-head-y{background:rgba(255,209,102,0.08);color:var(--accent3);}
+.sc-head-p{background:rgba(155,114,207,0.08);color:var(--purple);}
+.sc-head-r{background:rgba(255,107,107,0.08);color:var(--accent2);}
+.sc-row{padding:0.35rem 1rem;font-family:var(--mono);font-size:0.74rem;border-bottom:1px solid rgba(34,37,58,0.5);display:flex;gap:0.6rem;align-items:center;}
+.sc-field{color:var(--text);}
+.sc-type{color:var(--muted);font-size:0.68rem;}
+.sc-badge{font-size:0.58rem;font-weight:700;padding:0.15rem 0.4rem;border-radius:3px;}
+.sb-pk{background:rgba(255,209,102,0.15);color:var(--accent3);}
+.sb-ref{background:rgba(91,192,235,0.12);color:var(--blue);}
+.sb-idx{background:rgba(79,255,176,0.1);color:var(--accent);}
+.sb-em{background:rgba(155,114,207,0.12);color:var(--purple);}
+
+/* ── ARCHITECTURE CARDS ── */
+.arch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0;}
+@media(max-width:700px){.arch-grid{grid-template-columns:1fr;}}
+.ac{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.3rem;position:relative;overflow:hidden;}
+.ac::before{content:'';position:absolute;top:0;left:0;right:0;height:2.5px;}
+.ac-g::before{background:var(--accent);}
+.ac-b::before{background:var(--blue);}
+.ac-r::before{background:var(--accent2);}
+.ac-y::before{background:var(--accent3);}
+.ac-p::before{background:var(--purple);}
+.ac-pk::before{background:var(--pink);}
+.ac-icon{font-size:1.7rem;margin-bottom:0.7rem;}
+.ac h3{font-size:0.95rem;font-weight:700;color:var(--bright);margin-bottom:0.4rem;}
+.ac p{font-size:0.83rem;color:var(--muted);line-height:1.6;}
+.ac ul{font-size:0.82rem;color:var(--muted);padding-left:1.2rem;margin-top:0.4rem;}
+.ac li{margin:0.2rem 0;}
+
+/* ── FLOW BOX ── */
+.flow-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem;margin:1.5rem 0;overflow-x:auto;}
+.flow{font-family:var(--mono);font-size:0.76rem;line-height:2.1;white-space:pre;color:var(--text);}
+.fg{color:var(--accent);}
+.fb{color:var(--blue);}
+.fy{color:var(--accent3);}
+.fr{color:var(--accent2);}
+.fp{color:var(--purple);}
+.fm{color:var(--muted);}
+
+/* ── PHASE CARDS ── */
+.phase{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:1.5rem;overflow:hidden;}
+.ph-hdr{display:flex;align-items:center;gap:1rem;padding:1.2rem 1.6rem;border-bottom:1px solid var(--border);}
+.ph-badge{font-family:var(--mono);font-size:0.68rem;font-weight:700;color:#08090f;padding:0.3rem 0.7rem;border-radius:6px;min-width:64px;text-align:center;flex-shrink:0;letter-spacing:0.5px;}
+.phb-1{background:var(--accent);}
+.phb-2{background:var(--accent2);}
+.phb-3{background:var(--blue);}
+.phb-4{background:var(--accent3);}
+.phb-5{background:var(--purple);}
+.phb-6{background:var(--pink);}
+.phb-7{background:#00cec9;}
+.phb-8{background:var(--orange);}
+.ph-info{}
+.ph-title{font-size:1.1rem;font-weight:700;color:var(--bright);}
+.ph-sub{font-size:0.8rem;color:var(--muted);}
+.ph-body{padding:1.5rem 1.6rem;}
+.ph-body h4{font-family:var(--mono);font-size:0.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin:1.3rem 0 0.6rem;}
+.ph-body h4:first-child{margin-top:0;}
+.ph-body p,.ph-body li{font-size:0.9rem;color:var(--text);}
+.ph-body ul{padding-left:1.4rem;}
+.ph-body li{margin:0.3rem 0;}
+.ph-body code{font-family:var(--mono);font-size:0.76rem;background:rgba(79,255,176,0.08);color:var(--accent);padding:0.12rem 0.45rem;border-radius:3px;border:1px solid rgba(79,255,176,0.15);}
+
+/* ── PROMPT BOX ── */
+.pbox{background:#05060d;border:1px solid rgba(79,255,176,0.25);border-radius:10px;margin:1rem 0;overflow:hidden;}
+.pbox-hdr{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 1.1rem;background:rgba(79,255,176,0.05);border-bottom:1px solid rgba(79,255,176,0.12);}
+.pbox-hdr span{font-family:var(--mono);font-size:0.65rem;color:var(--accent);letter-spacing:2px;text-transform:uppercase;}
+.copy-btn{font-family:var(--mono);font-size:0.62rem;background:rgba(79,255,176,0.08);color:var(--accent);border:1px solid rgba(79,255,176,0.25);padding:0.22rem 0.7rem;border-radius:4px;cursor:pointer;transition:all .2s;font-weight:600;}
+.copy-btn:hover{background:rgba(79,255,176,0.18);}
+.pbox-content{padding:1.2rem 1.4rem;font-family:var(--mono);font-size:0.77rem;color:#8faac8;line-height:1.85;white-space:pre-wrap;}
+.pk{color:var(--accent3);}
+.pv{color:var(--accent);}
+.pc{color:var(--muted);}
+.pb{color:var(--pink);}
+.pa{color:var(--blue);}
+
+/* ── CODE BLOCK ── */
+code.blk{display:block;background:#05060d;border:1px solid var(--border);border-radius:8px;padding:1.1rem 1.4rem;font-family:var(--mono);font-size:0.77rem;color:#8faac8;line-height:1.8;white-space:pre;overflow-x:auto;margin:.8rem 0;}
+
+/* ── TABLES ── */
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.87rem;}
+thead th{background:var(--surface2);color:var(--bright);padding:0.65rem 1rem;text-align:left;font-family:var(--mono);font-size:0.68rem;letter-spacing:1px;text-transform:uppercase;font-weight:600;}
+tbody td{padding:0.6rem 1rem;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top;}
+tbody tr:hover td{background:var(--surface2);}
+.tag{display:inline-block;font-family:var(--mono);font-size:0.65rem;font-weight:700;padding:0.18rem 0.5rem;border-radius:3px;}
+.t-g{background:rgba(79,255,176,0.1);color:var(--accent);border:1px solid rgba(79,255,176,0.2);}
+.t-b{background:rgba(91,192,235,0.1);color:var(--blue);border:1px solid rgba(91,192,235,0.2);}
+.t-y{background:rgba(255,209,102,0.1);color:var(--accent3);border:1px solid rgba(255,209,102,0.2);}
+.t-r{background:rgba(255,107,107,0.1);color:var(--accent2);border:1px solid rgba(255,107,107,0.2);}
+.t-p{background:rgba(155,114,207,0.1);color:var(--purple);border:1px solid rgba(155,114,207,0.2);}
+
+/* ── INFO BOXES ── */
+.ib{border-radius:8px;padding:1rem 1.2rem;margin:.8rem 0;border-left:3px solid;font-size:0.88rem;}
+.ib-title{font-family:var(--mono);font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.4rem;}
+.ib-g{background:rgba(79,255,176,0.05);border-color:var(--accent);color:#7de8b8;}
+.ib-g .ib-title{color:var(--accent);}
+.ib-b{background:rgba(91,192,235,0.05);border-color:var(--blue);color:#7fc8e8;}
+.ib-b .ib-title{color:var(--blue);}
+.ib-y{background:rgba(255,209,102,0.06);border-color:var(--accent3);color:#e8c870;}
+.ib-y .ib-title{color:var(--accent3);}
+.ib-r{background:rgba(255,107,107,0.05);border-color:var(--accent2);color:#e88888;}
+.ib-r .ib-title{color:var(--accent2);}
+
+/* ── TIMELINE ── */
+.tl{position:relative;padding-left:2.5rem;margin:1.5rem 0;}
+.tl::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--accent),var(--blue),var(--purple));border-radius:2px;}
+.tl-item{position:relative;margin-bottom:1.4rem;}
+.tl-dot{position:absolute;left:-2.85rem;top:.25rem;width:14px;height:14px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;}
+.tl-dot::after{content:'';width:5px;height:5px;background:var(--accent);border-radius:50%;}
+.tl-t{font-weight:700;color:var(--bright);font-size:.93rem;}
+.tl-b{font-size:.85rem;color:var(--muted);margin-top:.3rem;}
+
+/* ── FOLDER TREE ── */
+.folder{background:#05060d;border:1px solid var(--border);border-radius:10px;padding:1.5rem;font-family:var(--mono);font-size:.77rem;line-height:1.9;color:#6a80a0;overflow-x:auto;}
+.fd{color:var(--blue);}
+.ff{color:#8faac8;}
+.fc{color:var(--muted);}
+.fi{color:var(--accent3);}
+
+/* ── WOW GRID ── */
+.wow-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;}
+@media(max-width:600px){.wow-grid{grid-template-columns:1fr;}}
+.wc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem;position:relative;}
+.wc::after{content:'★ WOW';position:absolute;top:.7rem;right:.9rem;font-family:var(--mono);font-size:.55rem;letter-spacing:1.5px;color:var(--accent3);opacity:.5;}
+.wc h3{font-size:.95rem;font-weight:700;color:var(--bright);margin-bottom:.4rem;}
+.wc p{font-size:.83rem;color:var(--muted);}
+
+/* ── HOSTING TABLE ── */
+.host-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0;}
+@media(max-width:700px){.host-grid{grid-template-columns:1fr;}}
+.hc{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.2rem;}
+.hc h3{font-size:.9rem;font-weight:700;color:var(--bright);margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem;}
+.hc ul{font-size:.82rem;color:var(--muted);padding-left:1.1rem;}
+.hc li{margin:.25rem 0;}
+.hc .free-badge{font-family:var(--mono);font-size:.58rem;background:rgba(79,255,176,0.1);color:var(--accent);border:1px solid rgba(79,255,176,0.2);padding:.1rem .4rem;border-radius:3px;}
+
+/* ── MOBILE APP PATHS ── */
+.path-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0;}
+@media(max-width:700px){.path-grid{grid-template-columns:1fr;}}
+.path-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.3rem;text-align:center;}
+.path-num{font-family:var(--mono);font-size:2rem;font-weight:700;margin-bottom:.5rem;}
+.path-card h3{font-size:.95rem;font-weight:700;color:var(--bright);margin-bottom:.4rem;}
+.path-card p{font-size:.82rem;color:var(--muted);line-height:1.6;}
+.path-label{font-family:var(--mono);font-size:.6rem;letter-spacing:2px;text-transform:uppercase;margin-top:.7rem;font-weight:700;}
+.path-easy .path-num{color:var(--accent);}
+.path-easy .path-label{color:var(--accent);}
+.path-mid .path-num{color:var(--accent3);}
+.path-mid .path-label{color:var(--accent3);}
+.path-hard .path-num{color:var(--purple);}
+.path-hard .path-label{color:var(--purple);}
+
+/* dividers */
+.div-sec{border:none;border-top:1px solid var(--border);margin:4rem 0;}
+.dl{display:flex;align-items:center;gap:1rem;margin:3.5rem 0;font-family:var(--mono);font-size:.6rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+.dl::before,.dl::after{content:'';flex:1;border-top:1px solid var(--border);}
+
+/* checklist */
+.chk{list-style:none;padding:0;margin:.8rem 0;}
+.chk li{display:flex;gap:.6rem;align-items:flex-start;font-size:.88rem;color:var(--text);padding:.4rem 0;border-bottom:1px solid rgba(34,37,58,.4);}
+.chk li:last-child{border:none;}
+.ci-g{color:var(--accent);flex-shrink:0;}
+.ci-y{color:var(--accent3);flex-shrink:0;}
+.ci-r{color:var(--accent2);flex-shrink:0;}
+
+/* footer */
+.footer{text-align:center;padding:3rem 1rem;border-top:1px solid var(--border);font-family:var(--mono);font-size:.65rem;color:var(--muted);letter-spacing:1px;}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════ HERO ══════════════════════════════════ -->
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="grid-lines"></div>
+  <div class="hero-eyebrow">🏆 Bound AI Hackathon · Complete Blueprint v2</div>
+  <h1>WeLe <em>AI Chat</em><br><span>Moderation</span> Platform</h1>
+  <p class="hero-desc">Full system design — now 100% MongoDB, zero PostgreSQL. Every phase, every prompt for Anti Gravity, full hosting guide, and mobile app conversion paths. Everything you need to go from idea → deployed product.</p>
+  <div class="hero-pills">
+    <span class="pill p-g">MongoDB Only</span>
+    <span class="pill p-b">5-Layer AI Pipeline</span>
+    <span class="pill p-r">Real-time Chat</span>
+    <span class="pill p-y">RAG Chatbot</span>
+    <span class="pill p-p">Admin Panel</span>
+    <span class="pill p-g">Anti Gravity Prompts</span>
+    <span class="pill p-b">Free Hosting Guide</span>
+    <span class="pill p-r">Mobile App Guide</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ═══════════════════════════ WHY MONGODB ONLY ═══════════════════════════ -->
+<div class="section">
+  <div class="sec-label">Database Decision</div>
+  <div class="sec-title">Why MongoDB Only — No PostgreSQL</div>
+  <p class="sec-sub">One database, one driver, one mental model. Here's why it's the right call for this system.</p>
+
+  <div class="mongo-why">
+    <div class="mw-card cross-card">
+      <h3>❌ Why PostgreSQL Was Overkill Here</h3>
+      <p>PostgreSQL shines for complex relational joins, transactions, and strict schemas. But WeLe's data is naturally document-shaped — a room has its blocked topics embedded, a user carries their violation history, a boundary rule has nested keyword arrays. Mapping this to SQL tables creates unnecessary JOIN complexity with no real benefit for a chat platform.</p>
+    </div>
+    <div class="mw-card check-card">
+      <h3>✅ Why MongoDB Is Perfect Here</h3>
+      <p>Every entity in WeLe maps cleanly to a document. Rooms embed their own blocked_topics array. Users embed violation history. Boundaries embed keyword arrays. You get a single Mongoose driver for everything, Atlas free tier covers all your storage needs, and queries are fast with proper indexes. For a hackathon, one DB = less config, less bugs, faster build.</p>
+    </div>
+    <div class="mw-card check-card">
+      <h3>✅ Mongoose Does Everything pg Did</h3>
+      <p>All the auth logic, room management, boundary rules, room requests — everything that was in PostgreSQL tables is now a Mongoose model. You write schema validation in JavaScript instead of SQL DDL. Relationships are handled via ObjectId references or embedding. The Node.js code gets simpler, not more complex.</p>
+    </div>
+    <div class="mw-card check-card">
+      <h3>✅ MongoDB Atlas Is Perfect for Hosting</h3>
+      <p>MongoDB Atlas free tier gives you a 512MB shared cluster with a connection string you paste straight into your .env file. Render + Atlas + Upstash (Redis) = your entire backend stack on free tier. No credit card required for any of them during a hackathon.</p>
+    </div>
+  </div>
+
+  <div class="ib ib-g">
+    <div class="ib-title">📦 Complete Database Stack — MongoDB Only</div>
+    <strong>MongoDB Atlas</strong> — users, rooms, boundaries, room requests, messages (all collections in one DB)<br>
+    <strong>Redis (Upstash)</strong> — boundary rule cache + rate limiting + session tokens<br>
+    <strong>ChromaDB</strong> — vector embeddings for RAG chatbot (runs inside AI service container)<br>
+    <strong>No PostgreSQL. No SQL. One Mongoose driver rules everything.</strong>
+  </div>
+</div>
+
+<!-- ═════════════════════════════ MONGOOSE SCHEMAS ═════════════════════════════ -->
+<div class="section">
+  <div class="sec-label">Data Models</div>
+  <div class="sec-title">All 5 Mongoose Schemas</div>
+  <p class="sec-sub">These replace every PostgreSQL table. Same data, cleaner structure.</p>
+
+  <div class="schema-grid">
+    <div class="sc">
+      <div class="sc-head sc-head-g">👤 User Model — users collection</div>
+      <div class="sc-row"><span class="sc-field">_id</span><span class="sc-type">ObjectId (auto)</span><span class="sc-badge sb-pk">PK</span></div>
+      <div class="sc-row"><span class="sc-field">name</span><span class="sc-type">String, required</span></div>
+      <div class="sc-row"><span class="sc-field">email</span><span class="sc-type">String, unique, required</span><span class="sc-badge sb-idx">IDX</span></div>
+      <div class="sc-row"><span class="sc-field">password</span><span class="sc-type">String (bcrypt hash)</span></div>
+      <div class="sc-row"><span class="sc-field">role</span><span class="sc-type">String enum: admin | learner</span></div>
+      <div class="sc-row"><span class="sc-field">violation_count</span><span class="sc-type">Number, default: 0</span></div>
+      <div class="sc-row"><span class="sc-field">muted_until</span><span class="sc-type">Date, default: null</span></div>
+      <div class="sc-row"><span class="sc-field">violation_history</span><span class="sc-type">Array of { reason, date }</span><span class="sc-badge sb-em">EMBEDDED</span></div>
+      <div class="sc-row"><span class="sc-field">created_at</span><span class="sc-type">Date, default: Date.now</span></div>
+    </div>
+    <div class="sc">
+      <div class="sc-head sc-head-b">🏠 Room Model — rooms collection</div>
+      <div class="sc-row"><span class="sc-field">_id</span><span class="sc-type">ObjectId (auto)</span><span class="sc-badge sb-pk">PK</span></div>
+      <div class="sc-row"><span class="sc-field">name</span><span class="sc-type">String, required</span></div>
+      <div class="sc-row"><span class="sc-field">topic</span><span class="sc-type">String, required</span></div>
+      <div class="sc-row"><span class="sc-field">description</span><span class="sc-type">String</span></div>
+      <div class="sc-row"><span class="sc-field">blocked_topics</span><span class="sc-type">Array of String</span><span class="sc-badge sb-em">EMBEDDED</span></div>
+      <div class="sc-row"><span class="sc-field">created_by</span><span class="sc-type">ObjectId ref: User</span><span class="sc-badge sb-ref">REF</span></div>
+      <div class="sc-row"><span class="sc-field">is_active</span><span class="sc-type">Boolean, default: true</span></div>
+      <div class="sc-row"><span class="sc-field">knowledge_embedded</span><span class="sc-type">Boolean, default: false</span></div>
+      <div class="sc-row"><span class="sc-field">member_count</span><span class="sc-type">Number, default: 0</span></div>
+      <div class="sc-row"><span class="sc-field">created_at</span><span class="sc-type">Date, default: Date.now</span></div>
+    </div>
+    <div class="sc">
+      <div class="sc-head sc-head-r">🚫 Boundary Model — boundaries collection</div>
+      <div class="sc-row"><span class="sc-field">_id</span><span class="sc-type">ObjectId (auto)</span><span class="sc-badge sb-pk">PK</span></div>
+      <div class="sc-row"><span class="sc-field">category</span><span class="sc-type">String, required, unique</span><span class="sc-badge sb-idx">IDX</span></div>
+      <div class="sc-row"><span class="sc-field">keywords</span><span class="sc-type">Array of String</span><span class="sc-badge sb-em">EMBEDDED</span></div>
+      <div class="sc-row"><span class="sc-field">patterns</span><span class="sc-type">Array of String (regex)</span><span class="sc-badge sb-em">EMBEDDED</span></div>
+      <div class="sc-row"><span class="sc-field">is_enabled</span><span class="sc-type">Boolean, default: true</span></div>
+      <div class="sc-row"><span class="sc-field">feedback_msg</span><span class="sc-type">String (popup text)</span></div>
+      <div class="sc-row"><span class="sc-field">updated_at</span><span class="sc-type">Date, auto-updated</span></div>
+    </div>
+    <div class="sc">
+      <div class="sc-head sc-head-y">📬 Room Request — roomrequests collection</div>
+      <div class="sc-row"><span class="sc-field">_id</span><span class="sc-type">ObjectId (auto)</span><span class="sc-badge sb-pk">PK</span></div>
+      <div class="sc-row"><span class="sc-field">user_id</span><span class="sc-type">ObjectId ref: User</span><span class="sc-badge sb-ref">REF</span></div>
+      <div class="sc-row"><span class="sc-field">user_name</span><span class="sc-type">String (denormalized)</span></div>
+      <div class="sc-row"><span class="sc-field">topic_name</span><span class="sc-type">String, required</span></div>
+      <div class="sc-row"><span class="sc-field">reason</span><span class="sc-type">String</span></div>
+      <div class="sc-row"><span class="sc-field">status</span><span class="sc-type">String enum: pending | approved | rejected</span></div>
+      <div class="sc-row"><span class="sc-field">admin_note</span><span class="sc-type">String, default: null</span></div>
+      <div class="sc-row"><span class="sc-field">created_at</span><span class="sc-type">Date, default: Date.now</span></div>
+    </div>
+    <div class="sc">
+      <div class="sc-head sc-head-p">💬 Message Model — messages collection</div>
+      <div class="sc-row"><span class="sc-field">_id</span><span class="sc-type">ObjectId (auto)</span><span class="sc-badge sb-pk">PK</span></div>
+      <div class="sc-row"><span class="sc-field">room_id</span><span class="sc-type">ObjectId ref: Room</span><span class="sc-badge sb-ref">REF</span></div>
+      <div class="sc-row"><span class="sc-field">user_id</span><span class="sc-type">ObjectId ref: User</span><span class="sc-badge sb-ref">REF</span></div>
+      <div class="sc-row"><span class="sc-field">username</span><span class="sc-type">String (denormalized)</span></div>
+      <div class="sc-row"><span class="sc-field">content</span><span class="sc-type">String, required</span></div>
+      <div class="sc-row"><span class="sc-field">moderation_status</span><span class="sc-type">String, default: 'allowed'</span></div>
+      <div class="sc-row"><span class="sc-field">topic_tag</span><span class="sc-type">String (AI-generated label)</span></div>
+      <div class="sc-row"><span class="sc-field">created_at</span><span class="sc-type">Date, default: Date.now</span><span class="sc-badge sb-idx">IDX</span></div>
+    </div>
+    <div class="sc">
+      <div class="sc-head" style="background:rgba(0,206,201,0.08);color:#00cec9;">📊 ViolationLog — violationlogs collection</div>
+      <div class="sc-row"><span class="sc-field">_id</span><span class="sc-type">ObjectId (auto)</span><span class="sc-badge sb-pk">PK</span></div>
+      <div class="sc-row"><span class="sc-field">user_id</span><span class="sc-type">ObjectId ref: User</span><span class="sc-badge sb-ref">REF</span></div>
+      <div class="sc-row"><span class="sc-field">room_id</span><span class="sc-type">ObjectId ref: Room</span><span class="sc-badge sb-ref">REF</span></div>
+      <div class="sc-row"><span class="sc-field">message_content</span><span class="sc-type">String (snippet)</span></div>
+      <div class="sc-row"><span class="sc-field">violation_category</span><span class="sc-type">String (abuse / politics / off-topic...)</span></div>
+      <div class="sc-row"><span class="sc-field">layer_triggered</span><span class="sc-type">String (1-5)</span></div>
+      <div class="sc-row"><span class="sc-field">created_at</span><span class="sc-type">Date, default: Date.now</span><span class="sc-badge sb-idx">IDX</span></div>
+    </div>
+  </div>
+
+  <div class="ib ib-b">
+    <div class="ib-title">💡 Denormalization Note</div>
+    In MongoDB it's normal and recommended to store <code>username</code> inside the Message document even though it also exists in the User document. This avoids a JOIN ($lookup) on every message fetch. Same for storing <code>user_name</code> in RoomRequest. This is a MongoDB best practice — not a design flaw.
+  </div>
+</div>
+
+<!-- ═════════════════════════════ SYSTEM FLOW ═════════════════════════════ -->
+<div class="section">
+  <div class="sec-label">Architecture</div>
+  <div class="sec-title">Complete System Flow — MongoDB Edition</div>
+
+  <div class="flow-wrap">
+    <div class="flow"><span class="fy">┌──────────────────────────────────────────────────────────────────────────────┐</span>
+<span class="fy">│                    LEARNER BROWSER / MOBILE (React App)                     │</span>
+<span class="fy">└──────────────┬──────────────────────────────────────┬───────────────────────┘</span>
+               <span class="fb">│  Socket.io "send_message"            │  REST /chatbot</span>
+               <span class="fb">▼                                     ▼</span>
+     <span class="fg">┌──────────────────────┐       ┌─────────────────────────┐</span>
+     <span class="fg">│  Node.js Chat Server │       │  AI Service /chatbot    │</span>
+     <span class="fg">│  (Express+Socket.io) │       │  Personal + Room Bot    │</span>
+     <span class="fg">└──────────┬───────────┘       └──────────────┬──────────┘</span>
+                <span class="fb">│ POST /validate                       │ RAG query</span>
+                <span class="fb">▼                                     ▼</span>
+     <span class="fg">┌──────────────────────┐       ┌─────────────────────────┐</span>
+     <span class="fg">│  Python AI Service   │       │  ChromaDB (room vecs)   │</span>
+     <span class="fg">│  FastAPI port 8000   │       └─────────────────────────┘</span>
+     <span class="fg">│  ┌──────────────┐   │</span>
+     <span class="fg">│  │ L1 Regex/PII │◄──┼─── Boundary Rules</span>
+     <span class="fg">│  │ L2 Keywords  │   │    from Redis Cache</span>
+     <span class="fg">│  │ L3 Toxicity  │   │    (refreshed from MongoDB)</span>
+     <span class="fg">│  │ L4 Topic AI  │   │</span>
+     <span class="fg">│  │ L5 LLM Groq  │   │</span>
+     <span class="fg">│  └──────────────┘   │</span>
+     <span class="fg">└──────────┬───────────┘</span>
+                <span class="fg">│  ALLOW / BLOCK + feedback + suggestion</span>
+                <span class="fg">▼</span>
+     <span class="fy">┌──────────────────────┐</span>
+     <span class="fy">│   Decision Engine    │</span>
+     <span class="fy">└───────┬──────┬───────┘</span>
+             <span class="fg">│      │</span>
+      <span class="fg">ALLOWED ✅  BLOCKED ❌</span>
+             <span class="fg">│      │</span>
+             <span class="fb">▼      ▼</span>
+    <span class="fb">MongoDB    Emit 'message_blocked'</span>
+    <span class="fb">(save msg) to sender socket only</span>
+    <span class="fb">+ broadcast</span>
+    <span class="fb">to all in room</span>
+
+<span class="fy">── ADMIN SIDE ────────────────────────────────────────────────────────────────</span>
+
+<span class="fp">Admin Panel → Node.js API → MongoDB (all CRUD: rooms, boundaries, requests)</span>
+<span class="fp">           → POST /embed-knowledge → AI Service → ChromaDB (room vectors)</span>
+<span class="fp">Redis cache invalidated on every boundary update → AI uses fresh rules instantly</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════ TECH STACK ═════════════════════════════ -->
+<div class="section">
+  <div class="sec-label">Technology Stack</div>
+  <div class="sec-title">Every Tool You Need</div>
+
+  <div class="arch-grid">
+    <div class="ac ac-g">
+      <div class="ac-icon">⚛️</div>
+      <h3>Learner App</h3>
+      <ul>
+        <li>React 18 + React Router v6</li>
+        <li>Tailwind CSS</li>
+        <li>Socket.io-client</li>
+        <li>Axios for REST calls</li>
+      </ul>
+    </div>
+    <div class="ac ac-b">
+      <div class="ac-icon">🔧</div>
+      <h3>Chat Server</h3>
+      <ul>
+        <li>Node.js + Express</li>
+        <li>Socket.io</li>
+        <li>Mongoose (MongoDB ODM)</li>
+        <li>Redis (ioredis)</li>
+        <li>JWT + bcryptjs</li>
+        <li>Axios (calls AI service)</li>
+      </ul>
+    </div>
+    <div class="ac ac-r">
+      <div class="ac-icon">🧠</div>
+      <h3>AI Service</h3>
+      <ul>
+        <li>Python + FastAPI</li>
+        <li>Detoxify (toxicity model)</li>
+        <li>sentence-transformers</li>
+        <li>ChromaDB (vector store)</li>
+        <li>Groq SDK (LLM)</li>
+        <li>spaCy (NER)</li>
+        <li>pymongo (Python ↔ MongoDB)</li>
+      </ul>
+    </div>
+    <div class="ac ac-y">
+      <div class="ac-icon">📊</div>
+      <h3>Admin Panel</h3>
+      <ul>
+        <li>React 18 + Tailwind</li>
+        <li>Recharts (analytics)</li>
+        <li>Axios</li>
+      </ul>
+    </div>
+    <div class="ac ac-p">
+      <div class="ac-icon">💾</div>
+      <h3>Databases</h3>
+      <ul>
+        <li><strong>MongoDB Atlas</strong> — everything</li>
+        <li><strong>Redis (Upstash)</strong> — cache</li>
+        <li><strong>ChromaDB</strong> — vectors (local)</li>
+        <li><strong>No PostgreSQL!</strong></li>
+      </ul>
+    </div>
+    <div class="ac ac-pk">
+      <div class="ac-icon">🚀</div>
+      <h3>AI Models (Free)</h3>
+      <ul>
+        <li>Groq API — llama-3.1-8b-instant</li>
+        <li>all-MiniLM-L6-v2 — SBERT local</li>
+        <li>Detoxify multilingual — local</li>
+        <li>spaCy en_core_web_sm — local</li>
+        <li>Total AI cost = ₹0</li>
+      </ul>
+    </div>
+  </div>
+
+  <table>
+    <thead><tr><th>AI Layer</th><th>Model / Tool</th><th>Type</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>L1 — PII &amp; Regex</td><td>Regex + spaCy en_core_web_sm</td><td><span class="tag t-g">LOCAL</span></td><td>Phone, email, URLs, Aadhaar, PAN</td></tr>
+      <tr><td>L2 — Keywords</td><td>Redis-cached boundary rules from MongoDB</td><td><span class="tag t-b">CACHE</span></td><td>Custom boundary keyword matching</td></tr>
+      <tr><td>L3 — Toxicity</td><td>Detoxify multilingual model</td><td><span class="tag t-g">LOCAL PRE-TRAINED</span></td><td>Abuse, hate speech, harassment</td></tr>
+      <tr><td>L4 — Topic AI</td><td>sentence-transformers all-MiniLM-L6-v2</td><td><span class="tag t-g">LOCAL PRE-TRAINED</span></td><td>Cosine similarity topic matching</td></tr>
+      <tr><td>L5 — LLM Reasoning</td><td>Groq llama-3.1-8b-instant</td><td><span class="tag t-y">FREE API</span></td><td>Ambiguous messages + rewriter</td></tr>
+      <tr><td>Room Chatbot RAG</td><td>ChromaDB + SBERT + Groq</td><td><span class="tag t-p">RAG PIPELINE</span></td><td>Admin knowledge → user Q&amp;A</td></tr>
+      <tr><td>Personal Assistant</td><td>Groq + room metadata prompt</td><td><span class="tag t-y">PROMPT ENG</span></td><td>Route learners to correct rooms</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═════════════════════════════ FOLDER STRUCTURE ═════════════════════════════ -->
+<div class="section">
+  <div class="sec-label">Project Setup</div>
+  <div class="sec-title">Folder Structure — Copy This Exactly</div>
+
+  <div class="folder">
+<span class="fd">wele-ai-moderator/</span>
+├── <span class="fd">ai-service/</span>                   <span class="fc"># Python FastAPI — AI brain</span>
+│   ├── <span class="ff">main.py</span>                   <span class="fc"># FastAPI entry, /validate /chatbot /embed-knowledge</span>
+│   ├── <span class="ff">moderation_engine.py</span>      <span class="fc"># 5-layer pipeline orchestrator</span>
+│   ├── <span class="ff">pii_checker.py</span>            <span class="fc"># Regex + spaCy NER (Layer 1)</span>
+│   ├── <span class="ff">keyword_checker.py</span>        <span class="fc"># Redis cache keyword match (Layer 2)</span>
+│   ├── <span class="ff">toxicity.py</span>               <span class="fc"># Detoxify wrapper (Layer 3)</span>
+│   ├── <span class="ff">topic_detector.py</span>         <span class="fc"># SBERT cosine similarity (Layer 4)</span>
+│   ├── <span class="ff">llm_layer.py</span>              <span class="fc"># Groq reasoning + rewriter (Layer 5)</span>
+│   ├── <span class="ff">chatbot.py</span>                <span class="fc"># RAG room bot + personal assistant</span>
+│   ├── <span class="ff">embedder.py</span>               <span class="fc"># ChromaDB store + query</span>
+│   ├── <span class="ff">feedback.py</span>               <span class="fc"># Friendly message mapper</span>
+│   ├── <span class="ff">mongo_client.py</span>           <span class="fi"># pymongo connection to Atlas</span>
+│   ├── <span class="ff">requirements.txt</span>
+│   └── <span class="fi">.env</span>                      <span class="fc"># GROQ_API_KEY, MONGODB_URI, REDIS_URL</span>
+│
+├── <span class="fd">chat-server/</span>                  <span class="fc"># Node.js + Socket.io backend</span>
+│   ├── <span class="ff">server.js</span>                 <span class="fc"># Express + Socket.io main file</span>
+│   ├── <span class="fd">models/</span>                   <span class="fi"># All Mongoose models here</span>
+│   │   ├── <span class="ff">User.js</span>               <span class="fc"># users collection</span>
+│   │   ├── <span class="ff">Room.js</span>               <span class="fc"># rooms collection</span>
+│   │   ├── <span class="ff">Message.js</span>            <span class="fc"># messages collection</span>
+│   │   ├── <span class="ff">Boundary.js</span>           <span class="fc"># boundaries collection</span>
+│   │   ├── <span class="ff">RoomRequest.js</span>        <span class="fc"># roomrequests collection</span>
+│   │   └── <span class="ff">ViolationLog.js</span>       <span class="fc"># violationlogs collection</span>
+│   ├── <span class="fd">routes/</span>
+│   │   ├── <span class="ff">auth.js</span>               <span class="fc"># register, login</span>
+│   │   ├── <span class="ff">rooms.js</span>              <span class="fc"># CRUD rooms</span>
+│   │   ├── <span class="ff">requests.js</span>           <span class="fc"># room request submit + admin review</span>
+│   │   ├── <span class="ff">boundaries.js</span>         <span class="fi"># boundary CRUD + cache invalidation</span>
+│   │   └── <span class="ff">admin.js</span>              <span class="fc"># stats, violation logs dashboard</span>
+│   ├── <span class="fd">middleware/</span>
+│   │   └── <span class="ff">auth.js</span>               <span class="fc"># JWT verify middleware</span>
+│   ├── <span class="ff">package.json</span>
+│   └── <span class="fi">.env</span>                      <span class="fc"># MONGODB_URI, JWT_SECRET, REDIS_URL, AI_SERVICE_URL</span>
+│
+├── <span class="fd">learner-app/</span>                  <span class="fc"># React frontend for learners</span>
+│   ├── <span class="fd">src/</span>
+│   │   ├── <span class="fd">components/</span>
+│   │   │   ├── <span class="fi">MessageInput.jsx</span>    <span class="fc"># Intercepts send → socket</span>
+│   │   │   ├── <span class="fi">ModerationPopup.jsx</span> <span class="fc"># Friendly block popup</span>
+│   │   │   ├── <span class="ff">ChatWindow.jsx</span>
+│   │   │   ├── <span class="fi">RoomSidebar.jsx</span>     <span class="fc"># Room list + request button</span>
+│   │   │   ├── <span class="fi">PersonalBot.jsx</span>     <span class="fc"># Floating assistant chatbot</span>
+│   │   │   └── <span class="fi">RoomBot.jsx</span>         <span class="fc"># Room knowledge chatbot sidebar</span>
+│   │   ├── <span class="fd">pages/</span>
+│   │   │   ├── <span class="ff">Login.jsx</span>
+│   │   │   ├── <span class="ff">Home.jsx</span>            <span class="fc"># Room discovery</span>
+│   │   │   └── <span class="ff">ChatRoom.jsx</span>
+│   │   └── <span class="ff">App.jsx</span>
+│   └── <span class="ff">package.json</span>
+│
+├── <span class="fd">admin-panel/</span>                  <span class="fc"># React admin dashboard</span>
+│   ├── <span class="fd">src/pages/</span>
+│   │   ├── <span class="fi">RoomManager.jsx</span>       <span class="fc"># Create room + embed knowledge</span>
+│   │   ├── <span class="fi">BoundaryManager.jsx</span>   <span class="fc"># Add/toggle boundary keywords</span>
+│   │   ├── <span class="fi">Requests.jsx</span>          <span class="fc"># Approve/reject room requests</span>
+│   │   └── <span class="ff">Dashboard.jsx</span>         <span class="fc"># Violation analytics + charts</span>
+│   └── <span class="ff">package.json</span>
+│
+└── <span class="fi">docker-compose.yml</span>            <span class="fc"># One command to run everything</span>
+  </div>
+</div>
+
+<!-- ═════════════════════════════ PHASE 1 ═════════════════════════════ -->
+<div class="section">
+  <div class="sec-label">Phase-by-Phase Build</div>
+  <div class="sec-title">8 Phases — Build In This Exact Order</div>
+  <p class="sec-sub">Anti Gravity prompts are ready to copy. Paste them one phase at a time.</p>
+
+  <div class="phase">
+    <div class="ph-hdr">
+      <span class="ph-badge phb-1">PHASE 1</span>
+      <div class="ph-info">
+        <div class="ph-title">Project Setup + All Mongoose Models + JWT Auth</div>
+        <div class="ph-sub">~40 mins · Foundation — get this right and everything else is smooth</div>
+      </div>
+    </div>
+    <div class="ph-body">
+      <h4>What You're Building</h4>
+      <ul>
+        <li>Initialize all 4 project folders with package.json</li>
+        <li>All 6 Mongoose models: User, Room, Message, Boundary, RoomRequest, ViolationLog</li>
+        <li>MongoDB Atlas connection with mongoose</li>
+        <li>Upstash Redis connection with ioredis</li>
+        <li>JWT auth routes: register + login</li>
+        <li>JWT middleware to protect routes</li>
+      </ul>
+
+      <h4>Install Commands</h4>
+      <code class="blk"># AI Service (Python)
+cd ai-service && pip install fastapi uvicorn sentence-transformers detoxify \
+  chromadb groq spacy redis pymongo python-dotenv --break-system-packages
+python -m spacy download en_core_web_sm
+
+# Chat Server (Node.js) — ONE driver for everything
+cd ../chat-server && npm init -y
+npm install express socket.io mongoose ioredis jsonwebtoken bcryptjs cors dotenv axios
+
+# Learner App
+cd ../learner-app && npx create-react-app . --template cra-template
+npm install axios socket.io-client react-router-dom
+
+# Admin Panel
+cd ../admin-panel && npx create-react-app . --template cra-template
+npm install axios react-router-dom recharts</code>
+
+      <h4>Anti Gravity Prompt — Phase 1</h4>
+      <div class="pbox">
+        <div class="pbox-hdr">
+          <span>🚀 ANTI GRAVITY PROMPT — PHASE 1</span>
+          <button class="copy-btn" onclick="copyP(this)">COPY</button>
+        </div>
+        <div class="pbox-content"><span class="pc">// PHASE 1 — MongoDB-Only Setup, All Mongoose Models, JWT Auth</span>
+
+<span class="pk">CONTEXT:</span> <span class="pv">I am building WeLe — an AI-moderated learning community chat platform for a hackathon. The entire backend uses MongoDB (via Mongoose) only — no PostgreSQL, no SQL at all. I have 4 components: React learner app, Node.js+Socket.io chat server, Python FastAPI AI service, React admin panel.</span>
+
+<span class="pk">TASK — Generate these files:</span>
+
+<span class="pb">FILE 1: chat-server/models/User.js</span>
+Mongoose schema for users collection:
+- name: String required
+- email: String required unique (add index)
+- password: String required (will store bcrypt hash)
+- role: String enum ['admin', 'learner'] default 'learner'
+- violation_count: Number default 0
+- muted_until: Date default null
+- violation_history: Array of { reason: String, date: Date } (embedded array, max 20 entries)
+- created_at: Date default Date.now
+Export as mongoose.model('User', userSchema)
+
+<span class="pb">FILE 2: chat-server/models/Room.js</span>
+Mongoose schema for rooms collection:
+- name: String required
+- topic: String required
+- description: String
+- blocked_topics: [String] (array of strings like [".NET", "DevOps"])
+- created_by: ObjectId ref 'User'
+- is_active: Boolean default true
+- knowledge_embedded: Boolean default false (true after admin embeds knowledge)
+- member_count: Number default 0
+- created_at: Date default Date.now
+
+<span class="pb">FILE 3: chat-server/models/Message.js</span>
+Mongoose schema for messages collection:
+- room_id: ObjectId ref 'Room' required (add index)
+- user_id: ObjectId ref 'User' required
+- username: String required (denormalized — store here to avoid lookups)
+- content: String required
+- moderation_status: String default 'allowed'
+- topic_tag: String default null (AI-assigned topic label)
+- created_at: Date default Date.now (add index, sort descending)
+
+<span class="pb">FILE 4: chat-server/models/Boundary.js</span>
+Mongoose schema for boundaries collection:
+- category: String required unique (e.g., 'politics', 'abuse', 'pii', 'spam')
+- keywords: [String] (array of blocked keywords)
+- patterns: [String] (array of regex patterns as strings)
+- is_enabled: Boolean default true
+- feedback_msg: String (the popup message shown to user)
+- updated_at: Date auto-update on save
+
+<span class="pb">FILE 5: chat-server/models/RoomRequest.js</span>
+Mongoose schema for roomrequests collection:
+- user_id: ObjectId ref 'User' required
+- user_name: String (denormalized)
+- topic_name: String required
+- reason: String
+- status: String enum ['pending', 'approved', 'rejected'] default 'pending'
+- admin_note: String default null
+- created_at: Date default Date.now
+
+<span class="pb">FILE 6: chat-server/models/ViolationLog.js</span>
+Mongoose schema for violationlogs collection:
+- user_id: ObjectId ref 'User'
+- room_id: ObjectId ref 'Room'
+- message_content: String (first 200 chars of message)
+- violation_category: String
+- layer_triggered: String
+- created_at: Date default Date.now (add index)
+
+<span class="pb">FILE 7: chat-server/server.js (initial version)</span>
+- Connect to MongoDB using MONGODB_URI from .env (mongoose.connect)
+- Connect to Redis using REDIS_URL from .env (ioredis)
+- Express app with cors (allow localhost:3000 and localhost:3001) and json body parser
+- Mount routes: /api/auth, /api/rooms, /api/requests, /api/boundaries, /api/admin
+- Basic error handler middleware
+- Listen on PORT from .env default 5000
+- On startup: if boundaries collection is empty, seed 5 default boundary documents: abuse (keywords: ["idiot", "stupid", "hate"]), politics (["election", "government", "minister", "vote", "party", "bjp", "congress"]), pii (patterns: ["\\b\\d{10}\\b", "[\\w.-]+@[\\w.-]+\\.\\w+"]), spam (keywords: ["buy now", "click here", "free money"]), social_media (keywords: ["instagram", "youtube", "twitter", "tiktok", "facebook"])
+
+<span class="pb">FILE 8: chat-server/routes/auth.js</span>
+- POST /register: validate email unique, bcrypt hash password (salt 10), create User, sign JWT with {user_id: user._id, email, role}, return {token, user: {id, name, email, role}}
+- POST /login: find user by email, bcrypt compare, sign JWT same payload, return same shape
+
+<span class="pb">FILE 9: chat-server/middleware/auth.js</span>
+- Export protect middleware: extract Bearer token from Authorization header, verify JWT, attach req.user = {user_id, email, role}, call next()
+- Export adminOnly middleware: check req.user.role === 'admin', else 403
+
+<span class="pk">ENV VARS NEEDED (.env.example):</span>
+<span class="pv">MONGODB_URI=mongodb+srv://...
+REDIS_URL=rediss://...
+JWT_SECRET=your_secret_here
+PORT=5000
+AI_SERVICE_URL=http://localhost:8000</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 2 -->
+  <div class="phase">
+    <div class="ph-hdr">
+      <span class="ph-badge phb-2">PHASE 2</span>
+      <div class="ph-info">
+        <div class="ph-title">Python AI Moderation Engine — 5-Layer Pipeline</div>
+        <div class="ph-sub">~90 mins · The most important piece. Get this right first.</div>
+      </div>
+    </div>
+    <div class="ph-body">
+      <h4>Pipeline Architecture</h4>
+      <code class="blk">POST /validate  ←  called by Node.js chat server (server-side, not client)
+  body: { message: str, room_id: str, user_id: str }
+
+  Layer 1 — PII + Regex (5ms)
+    → Indian phone (10 digits), email, URLs, Aadhaar, PAN, passwords
+    → If match: BLOCK immediately
+
+  Layer 2 — Generic Keyword Match (10ms)
+    → Load from Redis (refreshed from MongoDB every 5 min)
+    → Check each enabled boundary category's keywords
+    → If match: BLOCK with category feedback
+
+  Layer 3 — Toxicity (60–100ms)
+    → Detoxify model, block if score > 0.7
+    
+  Layer 4 — Topic Similarity (100–200ms)
+    → Fetch room's blocked_topics from MongoDB
+    → SBERT embeddings → cosine similarity
+    → Block if any blocked topic similarity > 0.65
+
+  Layer 5 — LLM Groq (200–400ms) [only if layers 1-4 pass]
+    → Groq llama-3.1-8b-instant
+    → Returns ALLOW/BLOCK + reason + improved suggestion
+    → Skip if message clearly fine (confidence optimization)
+
+  Response: { status, reason, feedback, suggestion, layer_triggered }</code>
+
+      <h4>Anti Gravity Prompt — Phase 2</h4>
+      <div class="pbox">
+        <div class="pbox-hdr">
+          <span>🚀 ANTI GRAVITY PROMPT — PHASE 2</span>
+          <button class="copy-btn" onclick="copyP(this)">COPY</button>
+        </div>
+        <div class="pbox-content"><span class="pc">// PHASE 2 — Python FastAPI AI Moderation Engine (5 Layers)</span>
+
+<span class="pk">CONTEXT:</span> <span class="pv">Building the AI moderation service for WeLe. It receives chat messages and validates them through 5 layers before returning ALLOW or BLOCK. It connects to MongoDB Atlas to fetch room info and boundary rules. Boundary rules are cached in Redis. No PostgreSQL used anywhere.</span>
+
+<span class="pk">TECH:</span> <span class="pv">Python, FastAPI, Detoxify, sentence-transformers (all-MiniLM-L6-v2), Groq SDK, pymongo, redis, spaCy</span>
+
+<span class="pb">FILE 1: ai-service/mongo_client.py</span>
+- pymongo MongoClient connecting to MONGODB_URI from .env
+- Expose functions: get_room(room_id), get_enabled_boundaries()
+- get_room(room_id): find room by ObjectId in rooms collection, return dict with topic and blocked_topics
+- get_enabled_boundaries(): find all documents where is_enabled=true in boundaries collection, return list of dicts with category, keywords, patterns, feedback_msg
+
+<span class="pb">FILE 2: ai-service/pii_checker.py</span>
+- Compile regex patterns at module load (once):
+  * Indian phone: r'\b[6-9]\d{9}\b'
+  * Email: r'[\w\.-]+@[\w\.-]+\.\w+'
+  * URL: r'https?://\S+|www\.\S+'
+  * Aadhaar: r'\b\d{4}\s?\d{4}\s?\d{4}\b'
+  * PAN: r'\b[A-Z]{5}[0-9]{4}[A-Z]\b'
+  * Password hints: r'(?i)(password|passwd|pwd)\s*[:=]\s*\S+'
+- Load spaCy en_core_web_sm at module load (singleton)
+- Method check(message: str) -> dict
+  Return {blocked: bool, category: str, feedback: str}
+  Check all regex patterns first, then spaCy NER for PERSON/GPE entities in suspicious context
+
+<span class="pb">FILE 3: ai-service/keyword_checker.py</span>
+- Redis client from REDIS_URL .env (singleton)
+- On first call: load boundaries from MongoDB via mongo_client.get_enabled_boundaries(), store in Redis as JSON key 'wele:boundaries' with TTL 300 seconds
+- Method check(message: str) -> dict
+  - Load from Redis (or refresh if expired)
+  - For each enabled boundary: check if any keyword appears in message.lower()
+  - Also test regex patterns from that boundary
+  - If match: return {blocked: True, category, feedback: boundary.feedback_msg}
+  - Else: return {blocked: False}
+- Method invalidate_cache(): delete 'wele:boundaries' from Redis (called when admin updates boundaries)
+
+<span class="pb">FILE 4: ai-service/toxicity.py</span>
+- Load Detoxify('multilingual') model ONCE at module level (singleton, use try/except)
+- Method check(message: str) -> dict
+  - Run model.predict(message)
+  - If any score (toxicity, severe_toxicity, obscene, threat, insult, identity_attack) > 0.7: BLOCK
+  - Return {blocked: bool, score: float, feedback: "Let's keep this space respectful and professional 😊 Please rephrase your message."}
+
+<span class="pb">FILE 5: ai-service/topic_detector.py</span>
+- Load SentenceTransformer('all-MiniLM-L6-v2') ONCE at module level (singleton)
+- Import util from sentence_transformers for cosine_similarity
+- Method check(message: str, room_id: str) -> dict
+  - Call mongo_client.get_room(room_id) to get topic and blocked_topics list
+  - If blocked_topics is empty: return {blocked: False}
+  - Encode message + each blocked topic
+  - Compute cosine similarity between message embedding and each blocked topic embedding
+  - SIMILARITY_THRESHOLD = float(os.getenv('SIMILARITY_THRESHOLD', 0.65))
+  - If max similarity > threshold: return {blocked: True, matched_topic: best match, feedback: "This message seems outside the scope of this group. Please align your discussion with {room.topic}"}
+  - Else: return {blocked: False}
+
+<span class="pb">FILE 6: ai-service/llm_layer.py</span>
+- Groq client initialized once using GROQ_API_KEY from .env
+- Method check(message: str, room_id: str) -> dict
+  - Get room topic and blocked_topics from mongo_client.get_room()
+  - System prompt: "You are an AI content moderator for WeLe learning community. Room topic: {topic}. Topics not allowed in this room: {blocked_topics}. Generic rules: no politics, no abuse, no spam, no PII sharing, no self-promotion, no entertainment, no social media discussions. Analyze the message and respond with ONLY valid JSON (no markdown, no explanation outside JSON): {\"status\": \"ALLOW\" or \"BLOCK\", \"reason\": \"one sentence explanation\", \"suggestion\": \"improved message if BLOCK else null\"}"
+  - User prompt: "Message to check: " + message
+  - Call Groq llama-3.1-8b-instant, max_tokens=200, temperature=0.1
+  - Parse JSON from response (strip markdown if present)
+  - Return {blocked: status=="BLOCK", reason, suggestion}
+  - Wrap entirely in try/except — on any error return {blocked: False} (fail open)
+
+<span class="pb">FILE 7: ai-service/feedback.py</span>
+- Dictionary mapping category names to friendly feedback messages
+- Include all messages from Annexure A of problem statement
+- Method get_feedback(category: str, matched_topic: str = None) -> str
+
+<span class="pb">FILE 8: ai-service/moderation_engine.py</span>
+- Class ModerationEngine with async method validate(message: str, room_id: str, user_id: str) -> dict
+- Run layers in order, return immediately on BLOCK:
+  1. result = pii_checker.check(message) → if blocked: return with layer_triggered="1-pii"
+  2. result = keyword_checker.check(message) → if blocked: return with layer_triggered="2-keyword"
+  3. result = toxicity.check(message) → if blocked: return with layer_triggered="3-toxicity"
+  4. result = topic_detector.check(message, room_id) → if blocked: return with layer_triggered="4-topic"
+  5. result = llm_layer.check(message, room_id) → if blocked: return with layer_triggered="5-llm"
+  6. Return {status: "allowed", reason: null, feedback: null, suggestion: null, layer_triggered: null}
+- All BLOCK returns: {status: "blocked", reason, feedback, suggestion (from LLM if available), layer_triggered}
+
+<span class="pb">FILE 9: ai-service/main.py</span>
+- FastAPI app
+- Initialize ModerationEngine singleton on startup
+- POST /validate: receive {message, room_id, user_id}, call engine.validate(), return result
+- POST /embed-knowledge: receive {room_id, content} — used by admin; call embedder.embed_room_knowledge(), update room.knowledge_embedded=True in MongoDB
+- POST /chatbot: receive {message, room_id, mode, room_topic (optional)} — call chatbot functions
+- GET /invalidate-cache: call keyword_checker.invalidate_cache() — called by Node.js when admin updates boundaries
+- Startup event: log model loading status
+
+<span class="pk">IMPORTANT:</span> <span class="pv">All ML models (Detoxify, SentenceTransformer, spaCy) must load ONCE at module level using singleton pattern, NOT inside request handlers. If loaded per-request, first message will take 15+ seconds. Return JSON responses always. Wrap all external calls (Groq, MongoDB) in try/except.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 3 -->
+  <div class="phase">
+    <div class="ph-hdr">
+      <span class="ph-badge phb-3">PHASE 3</span>
+      <div class="ph-info">
+        <div class="ph-title">RAG Room Chatbot + Personal Assistant</div>
+        <div class="ph-sub">~60 mins · Admin feeds knowledge → users get smart answers</div>
+      </div>
+    </div>
+    <div class="ph-body">
+      <h4>How the Room Bot Knowledge Flow Works</h4>
+      <code class="blk">ADMIN creates "Machine Learning" room in Admin Panel:
+  1. Fills in room name, topic, blocked_topics
+  2. Pastes knowledge text: "ML is a subset of AI. Key algorithms: Linear Regression,
+     Decision Trees, Neural Networks. Supervised learning uses labeled data..."
+  3. Clicks Save → POST /api/rooms (Node.js creates room in MongoDB)
+  4. Node.js then calls POST /embed-knowledge on AI service
+  5. AI service chunks text → embeds → stores in ChromaDB "room_{room_id}" collection
+  6. Node.js updates room.knowledge_embedded = true in MongoDB
+
+USER asks room bot "What is supervised learning?":
+  1. POST /chatbot { message, room_id, mode: "room" }
+  2. ChromaDB query finds top 3 relevant chunks
+  3. Groq generates answer grounded in those chunks
+  4. Response shown in RoomBot sidebar panel</code>
+
+      <h4>Anti Gravity Prompt — Phase 3</h4>
+      <div class="pbox">
+        <div class="pbox-hdr">
+          <span>🚀 ANTI GRAVITY PROMPT — PHASE 3</span>
+          <button class="copy-btn" onclick="copyP(this)">COPY</button>
+        </div>
+        <div class="pbox-content"><span class="pc">// PHASE 3 — ChromaDB RAG Room Chatbot + Personal Assistant</span>
+
+<span class="pk">CONTEXT:</span> <span class="pv">Building dual chatbot system. Each room has a knowledge bot powered by RAG — admin provides learning content when creating the room, it's chunked and embedded into ChromaDB. Users query it in real time. There's also a personal assistant that routes learners to relevant rooms. Uses MongoDB for room metadata, ChromaDB for vectors, Groq for generation.</span>
+
+<span class="pk">TECH:</span> <span class="pv">Python, ChromaDB (persistent local), sentence-transformers all-MiniLM-L6-v2, Groq SDK, pymongo</span>
+
+<span class="pb">FILE 1: ai-service/embedder.py</span>
+- ChromaDB persistent client at ./chroma_data directory
+- SentenceTransformer('all-MiniLM-L6-v2') — reuse same model instance loaded in topic_detector (import from there, or use a shared models.py singleton)
+- Method embed_room_knowledge(room_id: str, content: str) -> dict:
+  * Chunk content: split into pieces of ~500 characters with 50-character overlap
+  * Generate embeddings for each chunk using model.encode()
+  * Get or create ChromaDB collection named "room_" + room_id
+  * Add all chunks with metadata {room_id, chunk_index} and their embeddings
+  * Return {success: True, chunks_stored: int}
+- Method query_room_knowledge(room_id: str, query: str, top_k: int = 3) -> list[str]:
+  * Try to get ChromaDB collection "room_" + room_id
+  * If collection doesn't exist or is empty: return []
+  * Encode query, query collection for top_k results
+  * Return list of document strings (the text chunks)
+
+<span class="pb">FILE 2: ai-service/chatbot.py</span>
+- Groq client initialized once (reuse singleton from llm_layer or create shared groq_client.py)
+- Method room_chatbot(message: str, room_id: str, room_topic: str) -> str:
+  * Call embedder.query_room_knowledge(room_id, message, top_k=3)
+  * If no results: return "I don't have specific information on that yet! Feel free to ask the community or check the main chat 🙂"
+  * Build system prompt: "You are a helpful learning assistant for the {room_topic} community. Answer questions ONLY based on the following knowledge base content. If the answer isn't clearly in the content, say 'I'm not sure about that — try asking in the community chat!' Do not make up information. Be concise and friendly. Knowledge base: {chr(10).join(chunks)}"
+  * Call Groq llama-3.1-8b-instant, max_tokens=300
+  * Return response string
+  * Wrap in try/except, return fallback on error
+
+- Method personal_assistant(message: str, rooms: list) -> str:
+  * rooms is list of dicts: {name, topic, description, _id}
+  * Build system prompt: "You are a friendly learning guide for WeLe platform. Your job is to help learners find the right learning community and encourage them. Available communities: {json.dumps([{name,topic,description} for r in rooms])}. When a user mentions a topic or skill they want to learn, enthusiastically guide them to the most relevant room. If no room matches, tell them they can request a new room using the 'Request Room' button. Keep responses under 3 sentences. Be warm and encouraging."
+  * Call Groq llama-3.1-8b-instant, max_tokens=200
+  * Return response string
+
+<span class="pb">Update ai-service/main.py to handle /chatbot endpoint:</span>
+- POST /chatbot body: {message: str, room_id: str (optional), mode: str "room"/"personal"}
+- If mode == "room":
+  * Get room from mongo_client.get_room(room_id) for room_topic
+  * Call chatbot.room_chatbot(message, room_id, room_topic)
+- If mode == "personal":
+  * Fetch all active rooms from MongoDB: db.rooms.find({is_active: True}, {name,topic,description,_id})
+  * Call chatbot.personal_assistant(message, rooms)
+- Return {response: str}
+
+<span class="pk">IMPORTANT:</span> <span class="pv">The SentenceTransformer model must be shared between topic_detector.py and embedder.py — load it once in a shared file like ai-service/models.py to avoid loading it twice (each load takes 2-3 seconds and uses 200MB RAM). Import the shared instance in both files.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 4 -->
+  <div class="phase">
+    <div class="ph-hdr">
+      <span class="ph-badge phb-4">PHASE 4</span>
+      <div class="ph-info">
+        <div class="ph-title">Chat Server REST APIs + Socket.io (Full)</div>
+        <div class="ph-sub">~60 mins · Real-time messaging + all CRUD endpoints</div>
+      </div>
+    </div>
+    <div class="ph-body">
+      <h4>Anti Gravity Prompt — Phase 4</h4>
+      <div class="pbox">
+        <div class="pbox-hdr">
+          <span>🚀 ANTI GRAVITY PROMPT — PHASE 4</span>
+          <button class="copy-btn" onclick="copyP(this)">COPY</button>
+        </div>
+        <div class="pbox-content"><span class="pc">// PHASE 4 — Node.js Chat Server: Socket.io + All REST APIs (MongoDB/Mongoose)</span>
+
+<span class="pk">CONTEXT:</span> <span class="pv">Building the real-time Node.js backend for WeLe. Uses Mongoose for all database operations (no PostgreSQL/pg anywhere). The critical part: when a message is sent via Socket.io, the server calls the Python AI service to validate BEFORE storing or broadcasting. This ensures AI validation cannot be bypassed by frontend manipulation.</span>
+
+<span class="pk">TECH:</span> <span class="pv">Node.js, Express, Socket.io, Mongoose, ioredis, axios, jsonwebtoken, bcryptjs</span>
+
+<span class="pb">FILE 1: chat-server/server.js (complete version with Socket.io)</span>
+Socket.io events:
+- 'join_room' event: socket.join(room_id), emit 'user_joined' to room
+- 'send_message' event: receive {content, room_id, token}
+  1. Verify JWT token from payload (use jwt.verify)
+  2. Find user by user_id from token using User.findById()
+  3. Check if user.muted_until > Date.now() → if muted, emit 'muted_warning' {until: user.muted_until} back to sender only, return
+  4. Call: const result = await axios.post(AI_SERVICE_URL + '/validate', {message: content, room_id, user_id: user._id.toString()})
+  5. If result.data.status === 'blocked':
+     a. Emit 'message_blocked' back to sender socket ONLY: {feedback, suggestion, reason, layer_triggered}
+     b. Create ViolationLog document and save to MongoDB
+     c. User.findByIdAndUpdate user: increment violation_count, push to violation_history array
+     d. If violation_count >= 5: set muted_until = new Date(Date.now() + 2*60*60*1000) [2 hours]
+     e. Else if violation_count >= 3: set muted_until = new Date(Date.now() + 30*60*1000) [30 mins]
+  6. If result.data.status === 'allowed':
+     a. Create Message document {room_id, user_id, username: user.name, content, topic_tag: result.data.topic_tag || null}
+     b. Save to MongoDB
+     c. Emit 'new_message' to ALL sockets in room_id: {_id, content, username, user_id, topic_tag, created_at}
+     d. Emit 'message_success' to sender only: {message: "Message posted! 🚀"}
+
+<span class="pb">FILE 2: chat-server/routes/rooms.js</span>
+All routes use protect middleware from middleware/auth.js:
+- GET /api/rooms: Room.find({is_active: true}).sort({created_at: -1}), return array
+- GET /api/rooms/:id: Room.findById(id), return room document
+- GET /api/rooms/:id/messages: Message.find({room_id: id}).sort({created_at: -1}).limit(50), return array
+- POST /api/rooms (adminOnly): Create Room from body {name, topic, description, blocked_topics[]}, save, return room
+- PATCH /api/rooms/:id (adminOnly): Update room fields (blocked_topics, description, is_active, knowledge_embedded), return updated room
+
+<span class="pb">FILE 3: chat-server/routes/requests.js</span>
+- POST /api/requests (protect): Body {topic_name, reason}. Create RoomRequest {user_id: req.user.user_id, user_name: req.user.name (need to fetch from DB), topic_name, reason}. Save and return.
+  Note: fetch user name from User.findById(req.user.user_id).select('name') before creating request
+- GET /api/requests (adminOnly): RoomRequest.find({}).sort({created_at: -1}), return array
+- GET /api/requests?status=pending (adminOnly): filter by status query param
+- PATCH /api/requests/:id (adminOnly): Body {status, admin_note}. Update and save. Return updated.
+
+<span class="pb">FILE 4: chat-server/routes/boundaries.js</span>
+- GET /api/boundaries (protect): Boundary.find({}), return all (admin uses this to display)
+- POST /api/boundaries (adminOnly): Create new boundary {category, keywords, patterns, is_enabled, feedback_msg}. After save, call axios.get(AI_SERVICE_URL + '/invalidate-cache') to clear Redis. Return boundary.
+- PATCH /api/boundaries/:id (adminOnly): Update boundary (keywords, patterns, is_enabled, feedback_msg). After update, call axios.get(AI_SERVICE_URL + '/invalidate-cache'). Return updated.
+- DELETE /api/boundaries/:id (adminOnly): Remove. Invalidate cache. Return {message: 'Deleted'}.
+
+<span class="pb">FILE 5: chat-server/routes/admin.js</span>
+All adminOnly routes:
+- GET /api/admin/stats: Return aggregated stats:
+  * total_rooms: Room.countDocuments({is_active: true})
+  * total_users: User.countDocuments({role: 'learner'})
+  * violations_today: ViolationLog.countDocuments({created_at: {$gte: startOfToday}})
+  * violations_by_category: ViolationLog.aggregate([{$group: {_id: '$violation_category', count: {$sum:1}}}])
+  * recent_violations: ViolationLog.find({}).sort({created_at:-1}).limit(10).populate('user_id','name')
+  Return all as single JSON object
+- GET /api/admin/violation-logs: ViolationLog.find({}).sort({created_at:-1}).limit(50).populate('user_id','name').populate('room_id','name')
+
+<span class="pk">IMPORTANT:</span>
+<span class="pv">1. Socket.io message validation MUST happen server-side — never trust the client to validate
+2. When violation count changes, use $inc and $push MongoDB operators for atomic updates
+3. Add proper try/catch on all async operations, emit 'error' event to socket on server errors
+4. The axios call to AI service has 3-second timeout — handle timeout gracefully
+5. All Mongoose queries use async/await pattern</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 5 -->
+  <div class="phase">
+    <div class="ph-hdr">
+      <span class="ph-badge phb-5">PHASE 5</span>
+      <div class="ph-info">
+        <div class="ph-title">Learner React App — Chat UI + Bots + Room Request</div>
+        <div class="ph-sub">~75 mins · The face of the product — make it beautiful</div>
+      </div>
+    </div>
+    <div class="ph-body">
+      <h4>Anti Gravity Prompt — Phase 5</h4>
+      <div class="pbox">
+        <div class="pbox-hdr">
+          <span>🚀 ANTI GRAVITY PROMPT — PHASE 5</span>
+          <button class="copy-btn" onclick="copyP(this)">COPY</button>
+        </div>
+        <div class="pbox-content"><span class="pc">// PHASE 5 — React Learner App: Chat, Moderation Popup, Dual Chatbot, Room Request</span>
+
+<span class="pk">CONTEXT:</span> <span class="pv">Building the React frontend for WeLe learners. Dark theme (#0a0b12 bg). Real-time chat via Socket.io. When a message is blocked, a gentle educational popup appears with feedback and an AI-suggested rewrite. A floating personal assistant helps discover rooms. Each room has a sidebar knowledge chatbot. Users can request new rooms via a sidebar button.</span>
+
+<span class="pk">TECH:</span> <span class="pv">React 18, Tailwind CSS, Socket.io-client (4.x), axios, react-router-dom v6</span>
+
+<span class="pb">Component 1: src/components/MessageInput.jsx (CRITICAL)</span>
+- Text input with placeholder "Type your message..."
+- Send button (or Enter key)
+- State: inputValue, isProcessing (bool), violationCount (int from localStorage)
+- On send:
+  * Set isProcessing = true, show subtle "Checking..." indicator
+  * Emit socket event 'send_message' with {content: inputValue, room_id: props.room_id, token: localStorage.getItem('token')}
+  * Clear input immediately for good UX
+  * isProcessing = false after emit
+- Listen to socket events:
+  * 'message_blocked': call props.onBlocked({feedback, suggestion, reason}) — this triggers popup
+  * 'new_message': call props.onNewMessage(msg)
+  * 'message_success': show brief green toast "Posted ✓" for 2 seconds
+  * 'muted_warning': show red toast with mute timer countdown
+
+<span class="pb">Component 2: src/components/ModerationPopup.jsx (THE KEY UX)</span>
+- Triggered when props.show = true, receives {feedback, suggestion, reason}
+- Design: slides up from bottom, semi-transparent amber/warm overlay (NOT aggressive red)
+- Layout:
+  * Icon: 🎯 or ⚠️ (soft, not alarming)
+  * Title: "Message Not Posted" in white, medium weight
+  * Feedback text: the friendly AI message (props.feedback) in muted amber
+  * If props.suggestion exists:
+    - Section "Try this instead:" in small green label
+    - The suggestion in a rounded box with copy icon
+    - "Use This Suggestion" button (fills input with suggestion)
+  * Buttons row: "Edit My Message" (outline) + "Dismiss" (ghost)
+- Tone: supportive, educational. The user made a mistake but we're helping them improve.
+- Animation: slideUp 0.3s ease, backdrop-filter blur
+
+<span class="pb">Component 3: src/components/ChatWindow.jsx</span>
+- Receives messages array as props
+- Own messages (user_id matches localStorage userId) aligned right with teal bubble
+- Other users' messages aligned left with dark bubble, show username above
+- Message bubble shows: content, topic_tag (small pill if exists), timestamp (formatted)
+- Auto-scroll to bottom on new message using useRef + useEffect
+- Empty state: "No messages yet. Start the conversation! 🚀"
+
+<span class="pb">Component 4: src/components/RoomSidebar.jsx</span>
+- Left sidebar listing all rooms from GET /api/rooms
+- Each room: icon (based on topic keyword), name, topic tag badge
+- Active room highlighted with accent border
+- Click navigates to /room/:id
+- At bottom: "+ Request New Room" button with outline style
+- On click: opens modal overlay with:
+  * Input: "Topic Name" (e.g., "Blockchain Development")
+  * Textarea: "Why do you think this room is needed?" 
+  * Submit button: POST /api/requests, show "Request Submitted! ✓" success toast
+  * Cancel button
+- On submit success: show confirmation and close modal
+
+<span class="pb">Component 5: src/components/PersonalBot.jsx (floating assistant)</span>
+- Fixed bottom-right corner: circular button with 🤖 icon, bounces gently
+- Click to expand into chat panel (280px wide, 380px tall)
+- Panel header: "Learning Guide" with minimize button
+- Chat interface: messages display, text input
+- On user message: POST /chatbot {message, mode: "personal"} to AI service URL
+- Show typing indicator while waiting
+- Bot responses can include room name chips — clicking navigates to that room
+- First message when opened: "Hi! 👋 I'm your learning guide. Which topic are you looking to explore today?"
+
+<span class="pb">Component 6: src/components/RoomBot.jsx (inline room knowledge bot)</span>
+- Collapsible right panel inside ChatRoom page
+- Tab button on right edge: "Ask Bot 🤖" 
+- When open: chat interface with room-specific context
+- Header shows: "Room: {topic}" and small note "Powered by room knowledge base"
+- On user message: POST /chatbot {message, room_id, mode: "room"} to AI service
+- If room.knowledge_embedded is false: show "Room knowledge not set up yet. Ask in the community!"
+
+<span class="pb">Pages:</span>
+- src/pages/Login.jsx: email/password form, POST /api/auth/login, store token + userId in localStorage, redirect to /
+- src/pages/Register.jsx: name/email/password, POST /api/auth/register
+- src/pages/Home.jsx: grid of room cards, show member_count, topic, description. Each card links to /room/:id. PersonalBot floating in corner.
+- src/pages/ChatRoom.jsx: full layout — RoomSidebar left, ChatWindow center, RoomBot right panel. Uses Socket.io connection. State: messages[], showModerationPopup, moderationData.
+
+<span class="pk">DESIGN TOKENS:</span>
+<span class="pv">bg: #0a0b12, surface: #111220, accent: #4fffb0 (green), warn: #ffd166 (amber)
+Font: system-ui. All Tailwind. ModerationPopup is the #1 UX priority — make it feel warm, not punishing.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 6 -->
+  <div class="phase">
+    <div class="ph-hdr">
+      <span class="ph-badge phb-6">PHASE 6</span>
+      <div class="ph-info">
+        <div class="ph-title">Admin Panel — Room Creation, Boundaries, Dashboard</div>
+        <div class="ph-sub">~60 mins · Full control center with knowledge embedding</div>
+      </div>
+    </div>
+    <div class="ph-body">
+      <h4>Anti Gravity Prompt — Phase 6</h4>
+      <div class="pbox">
+        <div class="pbox-hdr">
+          <span>🚀 ANTI GRAVITY PROMPT — PHASE 6</span>
+          <button class="copy-btn" onclick="copyP(this)">COPY</button>
+        </div>
+        <div class="pbox-content"><span class="pc">// PHASE 6 — Admin Panel: Room Manager, Boundary Manager, Requests, Dashboard</span>
+
+<span class="pk">CONTEXT:</span> <span class="pv">Building the admin React dashboard for WeLe. The most important flow: admin creates a room AND provides knowledge content that powers that room's AI chatbot. All data goes to MongoDB via Node.js API. Boundary changes hit an /invalidate-cache endpoint to refresh Redis immediately.</span>
+
+<span class="pk">TECH:</span> <span class="pv">React 18, Tailwind CSS, Recharts, axios</span>
+
+<span class="pb">Page 1: RoomManager.jsx — MOST IMPORTANT ADMIN PAGE</span>
+- List existing rooms as cards: name, topic, member_count, knowledge_embedded badge (✓ or ✗), active toggle
+- "Create New Room" prominent button
+- Room creation modal/form with these fields:
+  * Room Name (text input)
+  * Main Topic (text, e.g. "Full Stack Java Development")
+  * Description (textarea, 2-3 sentences)
+  * Blocked Topics (tag input component — type topic name, press Enter to add as removable tag)
+  * Knowledge Base (LARGE textarea, label: "Room Knowledge Base", placeholder: "Paste key concepts, important topics, FAQs, definitions, and learning resources about this topic. This content will power the room's AI chatbot — the more you add, the better the bot answers. (Minimum 200 words recommended)")
+  * Character counter below textarea
+- On submit flow:
+  1. POST /api/rooms with {name, topic, description, blocked_topics}
+  2. If knowledge textarea not empty: POST to AI_SERVICE_URL/embed-knowledge with {room_id: newRoom._id, content: knowledgeText}
+  3. PATCH /api/rooms/:id with {knowledge_embedded: true}
+  4. Show success: "Room created! Knowledge embedded ✓" or "Room created. Add knowledge later in edit."
+- Edit existing room: same form prefilled, show current blocked_topics as tags, option to re-embed knowledge
+
+<span class="pb">Page 2: BoundaryManager.jsx</span>
+- Accordion list of boundary categories loaded from GET /api/boundaries
+- Each accordion item shows:
+  * Category name + description
+  * Enable/disable toggle (PATCH /api/boundaries/:id {is_enabled})
+  * Keywords as removable chip tags
+  * "Add keyword" text input with + button
+  * "Edit feedback message" expandable section
+- On any change: call PATCH /api/boundaries/:id → Node.js calls Python /invalidate-cache automatically
+- "Add New Category" button: form with category name, initial keywords, feedback message
+- Show "✓ Changes saved and AI updated" toast on each save
+- Emphasize: "No code deployment required — changes are live within 30 seconds"
+
+<span class="pb">Page 3: Requests.jsx — Room Requests from Learners</span>
+- Tab filter: All | Pending | Approved | Rejected
+- Table columns: Learner Name, Requested Topic, Reason, Date, Status Badge, Actions
+- For pending requests:
+  * Green "Approve" button → PATCH /api/requests/:id {status: 'approved'} → show "Approved! Create this room in Room Manager."
+  * Red "Reject" button → opens modal to enter admin_note → PATCH with {status: 'rejected', admin_note}
+- Status badges: yellow PENDING, green APPROVED, red REJECTED
+- Empty state: "No pending requests 🎉"
+
+<span class="pb">Page 4: Dashboard.jsx</span>
+- Stats row (4 cards): Total Active Rooms, Total Learners, Violations Today, Pending Requests
+- Bar chart (Recharts BarChart): Violations by Category (x: category name, y: count) — data from GET /api/admin/stats violations_by_category
+- Recent Violations table: Username, Room, Message Snippet (first 60 chars), Category, Layer, Time
+- Auto-refresh every 30 seconds using setInterval in useEffect
+
+<span class="pb">Layout: AdminLayout.jsx</span>
+- Left sidebar navigation: Dashboard, Rooms, Boundaries, Requests
+- Header: "WeLe Admin" + logout button
+- Protected: if no token or role !== 'admin', redirect to /login
+
+<span class="pk">Note:</span> <span class="pv">The Knowledge Base textarea in RoomManager is the feature that powers the room chatbot — visually emphasize it. Use a slightly different background color, add a 🧠 icon, and explain clearly what it does. Judges will notice this innovative connection between admin setup and AI behavior.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 7 -->
+  <div class="phase">
+    <div class="ph-hdr">
+      <span class="ph-badge phb-7">PHASE 7</span>
+      <div class="ph-info">
+        <div class="ph-title">Docker Compose + Integration + Testing</div>
+        <div class="ph-sub">~45 mins · One command to run everything</div>
+      </div>
+    </div>
+    <div class="ph-body">
+      <h4>Integration Checklist</h4>
+      <ul class="chk">
+        <li><span class="ci-g">✓</span> Learner App → Chat Server via Socket.io: send_message, new_message, message_blocked</li>
+        <li><span class="ci-g">✓</span> Chat Server → AI Service via axios: POST /validate (server-side only)</li>
+        <li><span class="ci-g">✓</span> Admin Panel → Chat Server: create rooms, manage boundaries, review requests</li>
+        <li><span class="ci-g">✓</span> Chat Server → AI Service: POST /invalidate-cache after every boundary change</li>
+        <li><span class="ci-g">✓</span> Admin Panel → AI Service: POST /embed-knowledge after room creation</li>
+        <li><span class="ci-y">⚠</span> Test: user muting after 3+ violations (check muted_until in MongoDB)</li>
+        <li><span class="ci-y">⚠</span> Test: boundary update → Redis invalidated → new keyword blocked within 30s</li>
+        <li><span class="ci-y">⚠</span> Test: room chatbot with knowledge embedded vs. without</li>
+        <li><span class="ci-r">!</span> CORS: Node.js must allow learner-app (3000) and admin-panel (3001) origins</li>
+        <li><span class="ci-r">!</span> Socket.io CORS: add origins in Socket.io server config, not just Express</li>
+        <li><span class="ci-r">!</span> MongoDB ObjectId: when calling Python AI service from Node.js, pass room_id as string (.toString())</li>
+      </ul>
+
+      <h4>Anti Gravity Prompt — Phase 7</h4>
+      <div class="pbox">
+        <div class="pbox-hdr">
+          <span>🚀 ANTI GRAVITY PROMPT — PHASE 7</span>
+          <button class="copy-btn" onclick="copyP(this)">COPY</button>
+        </div>
+        <div class="pbox-content"><span class="pc">// PHASE 7 — Docker Compose + Dockerfiles + README</span>
+
+<span class="pk">TASK:</span> <span class="pv">Create docker-compose.yml and Dockerfiles for all services so the entire WeLe platform runs with one command: docker-compose up --build</span>
+
+<span class="pb">docker-compose.yml services:</span>
+1. mongodb: image mongo:6, port 27017, volume mongo_data:/data/db, healthcheck
+2. redis: image redis:7-alpine, port 6379, healthcheck
+3. ai-service: build ./ai-service, port 8000, env GROQ_API_KEY MONGODB_URI REDIS_URL SIMILARITY_THRESHOLD=0.65, volumes ./ai-service/chroma_data:/app/chroma_data, depends_on: mongodb redis
+4. chat-server: build ./chat-server, port 5000, env MONGODB_URI JWT_SECRET REDIS_URL AI_SERVICE_URL=http://ai-service:8000, depends_on: mongodb redis ai-service
+5. learner-app: build ./learner-app, port 3000, env REACT_APP_CHAT_SERVER=http://localhost:5000 REACT_APP_AI_SERVICE=http://localhost:8000, depends_on: chat-server
+6. admin-panel: build ./admin-panel, port 3001, env REACT_APP_CHAT_SERVER=http://localhost:5000 REACT_APP_AI_SERVICE=http://localhost:8000, depends_on: chat-server
+
+<span class="pb">Dockerfile for ai-service:</span>
+FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+RUN python -m spacy download en_core_web_sm
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+RUN python -c "from detoxify import Detoxify; Detoxify('multilingual')"
+COPY . .
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+Note: pre-download models in Dockerfile so they don't download on first request
+
+<span class="pb">Dockerfile for chat-server:</span>
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json .
+RUN npm ci --production
+COPY . .
+EXPOSE 5000
+CMD ["node", "server.js"]
+
+<span class="pb">Dockerfile for learner-app and admin-panel:</span>
+Multi-stage: node:18-alpine build stage, then nginx:alpine serve stage
+Build: npm ci && npm run build
+Serve: copy build/ to nginx html dir, expose port 80
+
+<span class="pb">.env.example file covering all variables across all services</span>
+
+<span class="pb">requirements.txt for ai-service:</span>
+fastapi, uvicorn[standard], sentence-transformers, detoxify, chromadb, groq, spacy, pymongo, redis, python-dotenv, numpy
+
+<span class="pb">README.md covering:</span>
+Quick Start (clone, copy .env.example to .env, fill GROQ_API_KEY and MONGODB_URI, docker-compose up --build)
+Architecture overview (one paragraph)
+All API endpoints (table format)
+How to create a room with knowledge base
+How to test moderation (example messages to try)
+Tech stack table</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 8 -->
+  <div class="phase">
+    <div class="ph-hdr">
+      <span class="ph-badge phb-8">PHASE 8</span>
+      <div class="ph-info">
+        <div class="ph-title">WOW Features — Build These to Win</div>
+        <div class="ph-sub">~30 mins each · Judges remember these</div>
+      </div>
+    </div>
+    <div class="ph-body">
+      <div class="wow-grid">
+        <div class="wc">
+          <h3>🔄 AI Message Rewriter</h3>
+          <p>Already built in L5 — the <code>suggestion</code> field in LLM layer. Just display it in ModerationPopup with "Use This Instead" button. Zero extra API calls needed.</p>
+        </div>
+        <div class="wc">
+          <h3>🏷️ Live Topic Tagging</h3>
+          <p>LLM Layer 5 response includes topic classification. Store as <code>topic_tag</code> in Message. Show as small pill badge on each message. Judges will notice the intelligence.</p>
+        </div>
+        <div class="wc">
+          <h3>📊 Violation Heatmap</h3>
+          <p>Admin dashboard Recharts bar chart by category, line chart over time, most violated rooms. Data from ViolationLog MongoDB aggregation queries.</p>
+        </div>
+        <div class="wc">
+          <h3>🔴 Smart Escalating Mute</h3>
+          <p>Violation 1: friendly warning. Violation 3: 30-min mute + "We noticed multiple attempts" message. Violation 5: 2-hour mute. Each escalation shows countdown timer to muted user.</p>
+        </div>
+        <div class="wc">
+          <h3>🔔 Repeat Violation Tone Shift</h3>
+          <p>ModerationPopup detects if user has 2+ violations. Changes popup text from "first-time gentle" to "we've noticed a pattern" — same warmth, but escalating educational tone.</p>
+        </div>
+        <div class="wc">
+          <h3>📚 Learning Resource Redirect</h3>
+          <p>When off-topic message blocked, personal assistant proactively suggests: "Your question about DevOps might fit better in the Cloud/DevOps room — want me to take you there?"</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- end phases section -->
+
+<!-- ═════════════════════════════ ALL APIS ═════════════════════════════ -->
+<div class="section">
+  <div class="sec-label">API Reference</div>
+  <div class="sec-title">Every Endpoint — Full List</div>
+
+  <table>
+    <thead><tr><th>Service</th><th>Method</th><th>Endpoint</th><th>Auth</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>AI Service</td><td>POST</td><td>/validate</td><td>None (internal)</td><td>Core 5-layer moderation check</td></tr>
+      <tr><td>AI Service</td><td>POST</td><td>/embed-knowledge</td><td>None (internal)</td><td>Embed room content into ChromaDB</td></tr>
+      <tr><td>AI Service</td><td>POST</td><td>/chatbot</td><td>None</td><td>Personal + room RAG chatbot</td></tr>
+      <tr><td>AI Service</td><td>GET</td><td>/invalidate-cache</td><td>None (internal)</td><td>Clear Redis boundary cache</td></tr>
+      <tr><td>Chat Server</td><td>POST</td><td>/api/auth/register</td><td>None</td><td>Register new user → MongoDB</td></tr>
+      <tr><td>Chat Server</td><td>POST</td><td>/api/auth/login</td><td>None</td><td>Login, return JWT</td></tr>
+      <tr><td>Chat Server</td><td>GET</td><td>/api/rooms</td><td>JWT</td><td>All active rooms (MongoDB)</td></tr>
+      <tr><td>Chat Server</td><td>POST</td><td>/api/rooms</td><td>Admin</td><td>Create room in MongoDB</td></tr>
+      <tr><td>Chat Server</td><td>PATCH</td><td>/api/rooms/:id</td><td>Admin</td><td>Update room settings</td></tr>
+      <tr><td>Chat Server</td><td>GET</td><td>/api/rooms/:id/messages</td><td>JWT</td><td>Last 50 messages from MongoDB</td></tr>
+      <tr><td>Chat Server</td><td>POST</td><td>/api/requests</td><td>JWT</td><td>Submit room request → MongoDB</td></tr>
+      <tr><td>Chat Server</td><td>GET</td><td>/api/requests</td><td>Admin</td><td>All requests with filter</td></tr>
+      <tr><td>Chat Server</td><td>PATCH</td><td>/api/requests/:id</td><td>Admin</td><td>Approve or reject request</td></tr>
+      <tr><td>Chat Server</td><td>GET</td><td>/api/boundaries</td><td>JWT</td><td>All boundary rules</td></tr>
+      <tr><td>Chat Server</td><td>POST</td><td>/api/boundaries</td><td>Admin</td><td>Add new boundary + invalidate cache</td></tr>
+      <tr><td>Chat Server</td><td>PATCH</td><td>/api/boundaries/:id</td><td>Admin</td><td>Update boundary + invalidate cache</td></tr>
+      <tr><td>Chat Server</td><td>DELETE</td><td>/api/boundaries/:id</td><td>Admin</td><td>Remove boundary + invalidate cache</td></tr>
+      <tr><td>Chat Server</td><td>GET</td><td>/api/admin/stats</td><td>Admin</td><td>Dashboard MongoDB aggregations</td></tr>
+      <tr><td>Socket.io</td><td>EVENT</td><td>join_room</td><td>—</td><td>Join Socket.io room</td></tr>
+      <tr><td>Socket.io</td><td>EVENT</td><td>send_message</td><td>JWT in payload</td><td>Send message → triggers AI validation</td></tr>
+      <tr><td>Socket.io</td><td>EVENT</td><td>new_message</td><td>Server → Room</td><td>Broadcast allowed message</td></tr>
+      <tr><td>Socket.io</td><td>EVENT</td><td>message_blocked</td><td>Server → Sender</td><td>Block reason + suggestion</td></tr>
+      <tr><td>Socket.io</td><td>EVENT</td><td>message_success</td><td>Server → Sender</td><td>"Posted ✓" confirmation</td></tr>
+      <tr><td>Socket.io</td><td>EVENT</td><td>muted_warning</td><td>Server → Sender</td><td>Mute notification + timer</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═════════════════════════════ DEMO SCRIPT ═════════════════════════════ -->
+<div class="section">
+  <div class="sec-label">Hackathon Demo</div>
+  <div class="sec-title">5-Minute Demo Script — Practice This</div>
+
+  <div class="tl">
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-t">00:00 — Admin Creates a Room with Knowledge</div>
+      <div class="tl-b">Go to Admin Panel → RoomManager → Create "Machine Learning" room. Add blocked topics: "Deep Learning, NLP, Computer Vision". Paste 3 paragraphs of ML basics into Knowledge Base textarea. Submit → watch "Knowledge Embedded ✓" appear. This primes the room chatbot.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-t">01:00 — Live Boundary Update</div>
+      <div class="tl-b">Open Boundary Manager → click "politics" category → add keyword "rahul" → Save. Show "AI Updated ✓" toast. Explain: zero code deploy, takes effect in under 30 seconds. This is dynamic AI configuration.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-t">01:45 — 3 Moderation Cases Back to Back</div>
+      <div class="tl-b">Case 1: "Call me at 9876543210" → BLOCKED (PII layer). Case 2: "BJP is better than Congress" → BLOCKED (politics, even the new keyword "rahul" works). Case 3: "Is .NET better for enterprise?" in Java room → BLOCKED (topic AI). Show warm popup each time, different feedback message.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-t">02:45 — AI Rewriter in Action</div>
+      <div class="tl-b">Type "Which is better Python or Java?" in Java room → BLOCKED (off-topic). Show AI suggestion: "What advantages does Java offer over scripting languages for enterprise-grade backend development?" → click "Use This Suggestion" → message posts with green "Posted ✓". Crowd goes 🤯</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-t">03:30 — Room Knowledge Bot</div>
+      <div class="tl-b">Open RoomBot sidebar → ask "What is supervised learning?" → bot answers from the content you embedded 3 minutes ago in admin. Ask something not in knowledge: bot honestly says "I'm not sure — try asking in the chat!" Shows grounded RAG, not hallucination.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-t">04:15 — Personal Assistant + Room Request</div>
+      <div class="tl-b">Open floating bot → ask "I want to learn about databases" → bot suggests MongoDB room and navigates there. Then click "Request New Room" button → fill "Blockchain Development" → submit → switch to Admin panel → request appears → approve it. Full cycle in 45 seconds.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-t">04:45 — Show Violation Dashboard</div>
+      <div class="tl-b">Admin Dashboard shows the violations you just triggered: bar chart by category, recent violation log with user names, message snippets, and layer that caught it. This is your WOW closing shot.</div>
+    </div>
+  </div>
+</div>
+
+<div class="dl">Free Hosting + Mobile App Guide</div>
+
+<!-- ═════════════════════════════ FREE HOSTING ═════════════════════════════ -->
+<div class="section">
+  <div class="sec-label">Deployment</div>
+  <div class="sec-title">Free Hosting — Frontend + Backend</div>
+  <p class="sec-sub">Total monthly cost at hackathon scale = ₹0. Here's exactly where each piece goes.</p>
+
+  <div class="host-grid">
+    <div class="hc">
+      <h3>⚛️ React Apps <span class="free-badge">FREE</span></h3>
+      <ul>
+        <li><strong>Vercel</strong> — best for React</li>
+        <li>Connect GitHub repo → auto-deploy</li>
+        <li>Free .vercel.app domain</li>
+        <li>HTTPS + global CDN included</li>
+        <li>Deploy learner-app AND admin-panel as two separate Vercel projects</li>
+        <li>env vars set in Vercel dashboard</li>
+      </ul>
+    </div>
+    <div class="hc">
+      <h3>🔧 Node.js Server <span class="free-badge">FREE</span></h3>
+      <ul>
+        <li><strong>Render.com</strong> — best free Node host</li>
+        <li>Connect GitHub, set start command</li>
+        <li>Free tier sleeps after 15 min idle (30s wake — fine for hackathon)</li>
+        <li><strong>Railway.app</strong> — alternative, $5 free credit/month</li>
+        <li>Set all env vars in Render dashboard</li>
+        <li>Render gives you HTTPS URL automatically</li>
+      </ul>
+    </div>
+    <div class="hc">
+      <h3>🧠 Python AI Service <span class="free-badge">FREE*</span></h3>
+      <ul>
+        <li><strong>Render.com</strong> (512MB RAM — tight for ML models)</li>
+        <li><strong>Hugging Face Spaces</strong> — better for AI, more RAM</li>
+        <li>HF Spaces: create Space → SDK: Docker → push code</li>
+        <li>*Models (Detoxify + SBERT) are ~500MB combined — test RAM usage first</li>
+        <li>If RAM issues: use only Groq API (skip local Detoxify), use Perspective API for toxicity</li>
+      </ul>
+    </div>
+    <div class="hc">
+      <h3>🍃 MongoDB <span class="free-badge">FREE</span></h3>
+      <ul>
+        <li><strong>MongoDB Atlas</strong> — the standard</li>
+        <li>Free M0 cluster: 512MB storage</li>
+        <li>atlas.mongodb.com → Create cluster → Get connection string</li>
+        <li>Paste MONGODB_URI in all service env vars</li>
+        <li>Built-in Charts for analytics too</li>
+      </ul>
+    </div>
+    <div class="hc">
+      <h3>⚡ Redis <span class="free-badge">FREE</span></h3>
+      <ul>
+        <li><strong>Upstash</strong> — serverless Redis</li>
+        <li>Free tier: 10,000 commands/day</li>
+        <li>upstash.com → Create database → Get REDIS_URL</li>
+        <li>Sufficient for boundary caching at hackathon scale</li>
+        <li>Auto-sleep when idle (no cost)</li>
+      </ul>
+    </div>
+    <div class="hc">
+      <h3>🤖 AI APIs <span class="free-badge">FREE</span></h3>
+      <ul>
+        <li><strong>Groq</strong> — console.groq.com, free tier</li>
+        <li>~14,400 requests/day free on llama-3.1-8b-instant</li>
+        <li>Ultra fast: 500ms average latency</li>
+        <li>Backup: Google Gemini Flash (also free tier)</li>
+        <li>ChromaDB runs inside AI service (no external cost)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="ib ib-g">
+    <div class="ib-title">✅ Deployment Order</div>
+    1. Create MongoDB Atlas cluster → get connection string<br>
+    2. Create Upstash Redis → get connection string<br>
+    3. Sign up Groq → get API key<br>
+    4. Deploy Python AI service to Render/HF Spaces → get URL<br>
+    5. Deploy Node.js chat server to Render with all env vars → get URL<br>
+    6. Deploy learner-app to Vercel with REACT_APP_CHAT_SERVER=Step5 URL → get URL<br>
+    7. Deploy admin-panel to Vercel same way<br>
+    8. Done. All free. All live.
+  </div>
+
+  <div class="ib ib-y">
+    <div class="ib-title">⚠️ Socket.io on Free Render Tier</div>
+    Render free tier spins down after 15 minutes. When a user visits and the server is asleep, the first Socket.io connection takes ~30 seconds. For a hackathon demo: open the site 1 minute before judging to wake the server. For production: upgrade to Render paid ($7/month) or use Railway which stays awake on free credit.
+  </div>
+</div>
+
+<!-- ═════════════════════════════ MOBILE APP ═════════════════════════════ -->
+<div class="section">
+  <div class="sec-label">Mobile App</div>
+  <div class="sec-title">3 Ways to Make WeLe a Mobile App</div>
+  <p class="sec-sub">From easiest (half a day) to most powerful (few days). Pick based on your timeline.</p>
+
+  <div class="path-grid">
+    <div class="path-card path-easy">
+      <div class="path-num">01</div>
+      <h3>PWA — Progressive Web App</h3>
+      <p>Turn your existing React website into an installable app. Users open the site in Chrome/Safari → "Add to Home Screen" → installed with icon, launches fullscreen, works offline partially. No app store needed. No new code.</p>
+      <div class="path-label">⏱ 4–6 hours · Easiest</div>
+    </div>
+    <div class="path-card path-mid">
+      <div class="path-num">02</div>
+      <h3>Capacitor — Wrap React as APK</h3>
+      <p>Ionic Capacitor wraps your existing React build folder into a native Android APK. You get a real downloadable .apk file with no code rewriting. Install it on any Android without Play Store.</p>
+      <div class="path-label">⏱ 1–2 days · Medium</div>
+    </div>
+    <div class="path-card path-hard">
+      <div class="path-num">03</div>
+      <h3>Expo / React Native</h3>
+      <p>Rewrite UI using React Native components. All your API logic, Socket.io, and state management stays identical — only the JSX changes. Best long-term option. Generates real Android APK + iOS app via Expo EAS Build.</p>
+      <div class="path-label">⏱ 3–5 days · Best Result</div>
+    </div>
+  </div>
+
+  <div class="dl">PWA Setup — Do This For the Hackathon</div>
+
+  <div class="ib ib-b">
+    <div class="ib-title">📱 PWA Setup — 5 Steps (Do This First)</div>
+    <strong>Step 1:</strong> In <code>learner-app/public/manifest.json</code> add: <code>{"name":"WeLe","short_name":"WeLe","start_url":"/","display":"standalone","background_color":"#0a0b12","theme_color":"#4fffb0","icons":[{"src":"/icon-192.png","sizes":"192x192","type":"image/png"}]}</code><br><br>
+    <strong>Step 2:</strong> Add <code>&lt;link rel="manifest" href="/manifest.json"&gt;</code> to public/index.html<br><br>
+    <strong>Step 3:</strong> Create a basic service worker <code>public/sw.js</code> that caches the app shell<br><br>
+    <strong>Step 4:</strong> Register service worker in <code>src/index.js</code><br><br>
+    <strong>Step 5:</strong> Deploy to Vercel (PWA requires HTTPS). Open on phone in Chrome → install prompt appears automatically. Done — WeLe is now an installable app!
+  </div>
+
+  <div class="dl">Capacitor — Get a Real APK File</div>
+
+  <code class="blk"># Inside your learner-app/ folder:
+
+# 1. Install Capacitor
+npm install @capacitor/core @capacitor/cli @capacitor/android
+
+# 2. Initialize
+npx cap init WeLe com.wele.app --web-dir=build
+
+# 3. Build React app
+npm run build
+
+# 4. Add Android platform
+npx cap add android
+
+# 5. Copy web build to native
+npx cap copy android
+
+# 6. Open in Android Studio (or build directly)
+npx cap open android
+# In Android Studio: Build → Generate Signed APK
+
+# OR build APK directly (needs Android SDK):
+cd android && ./gradlew assembleDebug
+# APK output: android/app/build/outputs/apk/debug/app-debug.apk
+
+# Share the .apk file — anyone can install it on Android
+# (They need to enable "Install from Unknown Sources" in settings)</code>
+
+  <div class="dl">Expo React Native — For After Hackathon</div>
+
+  <div class="ib ib-g">
+    <div class="ib-title">✅ Expo EAS Build — The Clean Long-Term Path</div>
+    <strong>Why Expo:</strong> You already know React. React Native syntax is nearly identical — swap <code>&lt;div&gt;</code> for <code>&lt;View&gt;</code>, <code>&lt;p&gt;</code> for <code>&lt;Text&gt;</code>, <code>&lt;button&gt;</code> for <code>&lt;TouchableOpacity&gt;</code>. All your axios calls, Socket.io, and state logic is copy-paste identical.<br><br>
+    <strong>Build APK with EAS:</strong> <code>npx create-expo-app WeLeMobile</code> → write components → <code>eas build --platform android --profile preview</code> → Expo cloud builds it → download .apk link. Free tier gives 30 builds/month. No local Android SDK needed.<br><br>
+    <strong>For Play Store:</strong> <code>eas build --platform android --profile production</code> → generates .aab file → upload to Play Store ($25 one-time fee). For App Store: Apple Developer account ($99/year).
+  </div>
+
+  <table>
+    <thead><tr><th>Method</th><th>Time</th><th>Result</th><th>App Store?</th><th>Best For</th></tr></thead>
+    <tbody>
+      <tr><td><strong>PWA</strong></td><td>4–6 hrs</td><td>Installable from browser</td><td>No (direct install)</td><td>Hackathon demo right now</td></tr>
+      <tr><td><strong>Capacitor</strong></td><td>1–2 days</td><td>Real .apk file download</td><td>Yes (with signing)</td><td>Quick native APK, same codebase</td></tr>
+      <tr><td><strong>Expo / RN</strong></td><td>3–5 days</td><td>True native iOS + Android</td><td>Yes (Play Store + App Store)</td><td>Production-grade mobile app</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═════════════════════════════ FINAL NOTES ═════════════════════════════ -->
+<div class="section">
+  <div class="sec-label">Important Reminders</div>
+  <div class="sec-title">Bro, Don't Forget These</div>
+
+  <div class="ib ib-g">
+    <div class="ib-title">✅ MongoDB vs PostgreSQL — One Key Difference in Your Code</div>
+    MongoDB uses <code>_id</code> (ObjectId), not <code>id</code> (integer). When passing room_id from Node.js to Python AI service, always do <code>room_id.toString()</code>. In Python, wrap it: <code>from bson import ObjectId</code> and use <code>ObjectId(room_id_string)</code> for MongoDB queries. This is the #1 source of bugs when mixing Node.js ↔ Python ↔ MongoDB.
+  </div>
+  <div class="ib ib-b">
+    <div class="ib-title">💡 Groq Free Tier Limits — Plan Around This</div>
+    Groq free tier: ~14,400 requests/day on llama-3.1-8b-instant. For a hackathon demo that's plenty. However Layer 5 (LLM) should only trigger for ambiguous messages — add a quick pre-check: if message length < 10 chars or passes all 4 previous layers confidently, skip L5. This saves API calls and reduces latency.
+  </div>
+  <div class="ib ib-y">
+    <div class="ib-title">⚠️ ML Models RAM on Free Hosting</div>
+    Detoxify multilingual (~300MB) + SentenceTransformer all-MiniLM-L6-v2 (~90MB) + spaCy (~50MB) = ~440MB. Render free tier has 512MB RAM. It's tight. If it crashes: drop Detoxify and use Groq (L5) for toxicity too — just ask Groq to also check toxicity in its system prompt. That reduces RAM to ~150MB.
+  </div>
+  <div class="ib ib-r">
+    <div class="ib-title">🎯 Absolute MVP Priority If Time Runs Short</div>
+    Phase 1 → Phase 2 → Phase 4 → Phase 5 in this order. That gives you working chat + AI moderation + friendly popup. That alone is 80% of the score. Everything else (chatbot, admin panel, analytics) is bonus. Build the core perfectly, then add wow features.
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<div class="footer">
+  WELE AI CHAT MODERATION · COMPLETE BLUEPRINT v2 — MONGODB EDITION<br>
+  8 Phases · 5 AI Layers · 6 Mongoose Models · 2 Chatbots · Free Stack · Mobile Ready · Go Win 🏆
+</div>
+
+<script>
+function copyP(btn){
+  const box = btn.closest('.pbox');
+  const txt = box.querySelector('.pbox-content').innerText;
+  navigator.clipboard.writeText(txt).then(()=>{
+    btn.textContent='COPIED!';
+    btn.style.background='rgba(79,255,176,0.2)';
+    setTimeout(()=>{
+      btn.textContent='COPY';
+      btn.style.background='';
+    },2000);
+  });
+}
+</script>
+</body>
+</html>

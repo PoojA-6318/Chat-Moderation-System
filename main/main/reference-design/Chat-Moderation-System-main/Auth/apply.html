@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeLe - Apply as Teacher</title>
+    <link rel="stylesheet" href="../auth-styles/apply.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="apply-container">
+        <div class="apply-card">
+            <!-- Header -->
+            <div class="apply-header">
+                <a href="login.html" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    Back
+                </a>
+                <div class="logo">
+                    <span class="logo-text">WeLe</span>
+                    <span class="logo-badge">Teacher</span>
+                </div>
+            </div>
+            
+            <h1 class="apply-title">Become a verified teacher</h1>
+            <p class="apply-subtitle">Create paid classrooms and earn from your expertise</p>
+            
+            <!-- Benefits Grid -->
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <h3>Create paid rooms</h3>
+                    <p>Monetize your knowledge with premium classrooms</p>
+                </div>
+                <div class="benefit-card">
+                    <i class="fas fa-robot"></i>
+                    <h3>AI moderation</h3>
+                    <p>5-layer AI system keeps discussions focused</p>
+                </div>
+                <div class="benefit-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Analytics</h3>
+                    <p>Track student engagement and progress</p>
+                </div>
+                <div class="benefit-card">
+                    <i class="fas fa-percent"></i>
+                    <h3>Low fees</h3>
+                    <p>Only 10-15% platform fee on earnings</p>
+                </div>
+            </div>
+            
+            <!-- Application Form -->
+            <form class="apply-form" onsubmit="handleTeacherApplication(event)">
+                <div class="form-section">
+                    <h2>Personal Information</h2>
+                    
+                    <div class="input-row split">
+                        <div class="input-group">
+                            <label>
+                                <i class="far fa-user"></i>
+                                First name
+                            </label>
+                            <input type="text" id="firstname" placeholder="John" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>
+                                <i class="far fa-user"></i>
+                                Last name
+                            </label>
+                            <input type="text" id="lastname" placeholder="Doe" required>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>
+                            <i class="far fa-envelope"></i>
+                            Email
+                        </label>
+                        <input type="email" id="email" placeholder="john@example.com" required>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h2>Professional Information</h2>
+                    
+                    <div class="input-group">
+                        <label>
+                            <i class="fas fa-graduation-cap"></i>
+                            Area of expertise
+                        </label>
+                        <input type="text" id="expertise" placeholder="e.g., Full Stack Java, Data Science" required>
+                    </div>
+                    
+                    <div class="input-row split">
+                        <div class="input-group">
+                            <label>
+                                <i class="fas fa-briefcase"></i>
+                                Years of experience
+                            </label>
+                            <select id="experience" required>
+                                <option value="" disabled selected>Select years</option>
+                                <option value="1-2">1-2 years</option>
+                                <option value="3-5">3-5 years</option>
+                                <option value="5-10">5-10 years</option>
+                                <option value="10+">10+ years</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>
+                                <i class="fas fa-certificate"></i>
+                                Highest qualification
+                            </label>
+                            <input type="text" id="qualification" placeholder="e.g., M.Tech, PhD" required>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>
+                            <i class="fas fa-file-pdf"></i>
+                            Upload certificate (PDF)
+                        </label>
+                        <div class="file-upload">
+                            <input type="file" id="certificate" accept=".pdf" required>
+                            <div class="file-label">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span class="file-name">Click to upload or drag and drop</span>
+                                <span class="file-hint">PDF only, max 5MB</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>
+                            <i class="fas fa-pen"></i>
+                            Bio / Teaching experience
+                        </label>
+                        <textarea id="bio" rows="4" placeholder="Tell us about your teaching experience and what you'd like to teach..." required></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h2>Agreements</h2>
+                    
+                    <div class="checkbox">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="terms" required>
+                            <span class="checkmark"></span>
+                            <span class="checkbox-text">I confirm that all information provided is accurate</span>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="commission" required>
+                            <span class="checkmark"></span>
+                            <span class="checkbox-text">I understand the platform fee of 10-15% on paid rooms</span>
+                        </label>
+                    </div>
+                    
+                    <div class="checkbox">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="code-conduct" required>
+                            <span class="checkmark"></span>
+                            <span class="checkbox-text">I agree to follow the <a href="#">Teacher Code of Conduct</a></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="window.location.href='login.html'">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        Submit application
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Already Applied Link -->
+            <div class="status-prompt">
+                <p>Already applied? <a href="status.html">Check your application status</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================
+        // TEACHER APPLICATION LOGIC
+        // =========================================
+        
+        // Handle file upload
+        document.getElementById('certificate')?.addEventListener('change', function(e) {
+            const fileLabel = document.querySelector('.file-label .file-name');
+            const fileHint = document.querySelector('.file-label .file-hint');
+            
+            if (e.target.files[0]) {
+                const file = e.target.files[0];
+                if (file.type === 'application/pdf') {
+                    if (file.size <= 5 * 1024 * 1024) { // 5MB
+                        fileLabel.textContent = file.name;
+                        fileHint.textContent = '✓ Ready to upload';
+                        fileHint.style.color = '#059669';
+                    } else {
+                        showNotification('File size must be less than 5MB', 'error');
+                        e.target.value = '';
+                        fileLabel.textContent = 'Click to upload or drag and drop';
+                        fileHint.textContent = 'PDF only, max 5MB';
+                        fileHint.style.color = '#94a3b8';
+                    }
+                } else {
+                    showNotification('Please upload a PDF file', 'error');
+                    e.target.value = '';
+                    fileLabel.textContent = 'Click to upload or drag and drop';
+                    fileHint.textContent = 'PDF only, max 5MB';
+                    fileHint.style.color = '#94a3b8';
+                }
+            }
+        });
+
+        // Handle form submission
+        function handleTeacherApplication(event) {
+            event.preventDefault();
+            
+            // Get form data
+            const formData = {
+                id: 'APP-' + Date.now(),
+                firstName: document.getElementById('firstname').value,
+                lastName: document.getElementById('lastname').value,
+                name: document.getElementById('firstname').value + ' ' + document.getElementById('lastname').value,
+                email: document.getElementById('email').value,
+                expertise: document.getElementById('expertise').value,
+                experience: document.getElementById('experience').value,
+                qualification: document.getElementById('qualification').value,
+                bio: document.getElementById('bio').value,
+                status: 'pending',
+                submittedAt: new Date().toISOString(),
+                hasCertificate: !!document.getElementById('certificate').files[0]
+            };
+            
+            // Validate
+            if (!formData.hasCertificate) {
+                showNotification('Please upload your certificate', 'error');
+                return;
+            }
+            
+            // Get existing applications
+            const applications = JSON.parse(localStorage.getItem('wele-teacher-applications') || '[]');
+            
+            // Check if already applied
+            const existing = applications.find(app => app.email === formData.email);
+            if (existing) {
+                if (existing.status === 'pending') {
+                    showNotification('You already have a pending application!', 'info');
+                    setTimeout(() => {
+                        window.location.href = 'status.html?email=' + encodeURIComponent(formData.email);
+                    }, 2000);
+                    return;
+                } else if (existing.status === 'approved') {
+                    showNotification('You are already a verified teacher!', 'success');
+                    setTimeout(() => {
+                        window.location.href = '../index.html';
+                    }, 2000);
+                    return;
+                }
+            }
+            
+            // Save application
+            applications.push(formData);
+            localStorage.setItem('wele-teacher-applications', JSON.stringify(applications));
+            
+            // Update user role if user exists
+            const users = JSON.parse(localStorage.getItem('wele-users') || '[]');
+            const userIndex = users.findIndex(u => u.email === formData.email);
+            if (userIndex !== -1) {
+                users[userIndex].role = 'pending_teacher';
+                users[userIndex].appliedAt = formData.submittedAt;
+                localStorage.setItem('wele-users', JSON.stringify(users));
+                
+                // Update current user if logged in
+                const currentUser = JSON.parse(localStorage.getItem('wele-current-user'));
+                if (currentUser && currentUser.email === formData.email) {
+                    currentUser.role = 'pending_teacher';
+                    localStorage.setItem('wele-current-user', JSON.stringify(currentUser));
+                }
+            }
+            
+            // Show success
+            showNotification('Application submitted successfully!', 'success');
+            
+            // Redirect to status page
+            setTimeout(() => {
+                window.location.href = 'status.html?email=' + encodeURIComponent(formData.email);
+            }, 2000);
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Auto-fill if user is logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentUser = JSON.parse(localStorage.getItem('wele-current-user'));
+            
+            if (currentUser) {
+                const users = JSON.parse(localStorage.getItem('wele-users') || '[]');
+                const user = users.find(u => u.id === currentUser.id);
+                
+                if (user) {
+                    const nameParts = user.name.split(' ');
+                    document.getElementById('firstname').value = nameParts[0] || '';
+                    document.getElementById('lastname').value = nameParts.slice(1).join(' ') || '';
+                    document.getElementById('email').value = user.email;
+                }
+            }
+        });
+
+        // Input focus animations
+        document.querySelectorAll('input, select, textarea').forEach(field => {
+            field.addEventListener('focus', function() {
+                this.closest('.input-group').classList.add('focused');
+            });
+            
+            field.addEventListener('blur', function() {
+                this.closest('.input-group').classList.remove('focused');
+            });
+        });
+    </script>
+</body>
+</html>

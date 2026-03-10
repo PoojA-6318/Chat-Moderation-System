@@ -1,0 +1,153 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  learner
+  mentor
+}
+
+enum MentorStatus {
+  none
+  pending
+  approved
+  rejected
+}
+
+enum RoomType {
+  public
+  private
+}
+
+enum RequestStatus {
+  pending
+  approved
+  rejected
+}
+
+model User {
+  id                String           @id @default(uuid())
+  firstName         String
+  lastName          String
+  name              String?
+  email             String           @unique
+  password          String
+  role              Role             @default(learner)
+  mentorStatus      MentorStatus     @default(none)
+  isTeacher         Boolean          @default(false)
+  certificateUrl    String?
+  violation_count   Int              @default(0)
+  muted_until       DateTime?
+  created_at        DateTime         @default(now())
+  
+  // Relations
+  rooms             Room[]           @relation("UserRooms")
+  messages          Message[]
+  roomRequests      RoomRequest[]
+  violationLogs     ViolationLog[]
+  violationHistory  ViolationEntry[]
+
+  @@map("users")
+}
+
+model ViolationEntry {
+  id       String   @id @default(uuid())
+  reason   String?
+  date     DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String
+
+  @@map("violation_entries")
+}
+
+model Room {
+  id                 String         @id @default(uuid())
+  name               String
+  topic              String
+  description        String?        @default("")
+  blocked_topics     String[]       @default([])
+  is_active          Boolean        @default(true)
+  is_approved        Boolean        @default(true)
+  type               RoomType       @default(public)
+  password           String?
+  knowledge_embedded Boolean        @default(false)
+  member_count       Int            @default(0)
+  created_at         DateTime       @default(now())
+
+  // Relations
+  created_by         User?          @relation("UserRooms", fields: [createdById], references: [id])
+  createdById        String?
+  messages           Message[]
+  violationLogs      ViolationLog[]
+
+  @@map("rooms")
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  content    String
+  topic_tag  String?
+  username   String
+  created_at DateTime @default(now())
+
+  // Relations
+  room       Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+
+  @@map("messages")
+}
+
+model RoomRequest {
+  id          String        @id @default(uuid())
+  user_name   String
+  topic_name  String
+  reason      String?       @default("")
+  type        RoomType      @default(public)
+  password    String?
+  status      RequestStatus @default(pending)
+  admin_note  String?
+  created_at  DateTime      @default(now())
+
+  // Relations
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+
+  @@map("room_requests")
+}
+
+model ViolationLog {
+  id                 String   @id @default(uuid())
+  message_content    String
+  violation_category String
+  layer_triggered    String?
+  created_at         DateTime @default(now())
+
+  // Relations
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId             String
+  room               Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId             String
+
+  @@map("violation_logs")
+}
+
+model Boundary {
+  id           String   @id @default(uuid())
+  category     String
+  keywords     String[] @default([])
+  patterns     String[] @default([])
+  feedback_msg String
+
+  @@map("boundaries")
+}

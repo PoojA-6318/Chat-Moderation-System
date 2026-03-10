@@ -1,0 +1,416 @@
+/* =========================================
+   MODALS.CSS - Modal Dialogs
+   WeLe Color Palette - Green Theme
+   ========================================= */
+
+/* Modal Overlay */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+    animation: fadeIn var(--transition-fast);
+    padding: 20px;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+/* Modal Content */
+.modal-content {
+    background: var(--white);
+    border-radius: var(--border-radius-xl);
+    padding: 32px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    border: 2px solid var(--border-color);
+    animation: slideIn var(--transition-normal);
+    position: relative;
+}
+
+.modal-content.large {
+    max-width: 800px;
+}
+
+.modal-content.small {
+    max-width: 400px;
+}
+
+/* Modal Header */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.modal-header h2 {
+    color: var(--text-dark);
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.modal-header h3 {
+    color: var(--text-dark);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Close Button */
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--text-muted);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all var(--transition-fast);
+    line-height: 1;
+}
+
+.close-btn:hover {
+    background: var(--input-bg);
+    color: var(--error);
+    transform: rotate(90deg);
+}
+
+/* Modal Body */
+.modal-body {
+    margin-bottom: 24px;
+}
+
+/* Modal Footer */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 2px solid var(--border-color);
+}
+
+/* Modal Actions */
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+/* Form Groups in Modals */
+.modal .form-group {
+    margin-bottom: 20px;
+}
+
+.modal .form-group label {
+    font-weight: 600;
+    color: var(--text-medium);
+    margin-bottom: 8px;
+    display: block;
+}
+
+.modal .form-group input,
+.modal .form-group textarea,
+.modal .form-group select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--input-border);
+    border-radius: var(--border-radius-md);
+    background: var(--input-bg);
+    color: var(--text-dark);
+    font-size: 15px;
+    transition: all var(--transition-fast);
+}
+
+.modal .form-group input:focus,
+.modal .form-group textarea:focus,
+.modal .form-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px var(--primary-bg);
+}
+
+/* Invite Link Section */
+.invite-link {
+    margin-top: 24px;
+    padding: 20px;
+    background: var(--primary-bg);
+    border-radius: var(--border-radius-md);
+    border: 2px solid var(--primary-border);
+}
+
+.invite-link h3 {
+    color: var(--primary);
+    margin-bottom: 12px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.link-box {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.link-box input {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid var(--primary-border);
+    border-radius: var(--border-radius-md);
+    background: var(--white);
+    color: var(--text-dark);
+    font-size: 14px;
+    font-family: monospace;
+}
+
+.link-box button {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+
+.link-box button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow-green);
+}
+
+/* Info Message */
+.info-message {
+    padding: 16px;
+    background: #fef3c7;
+    border-radius: var(--border-radius-md);
+    color: #92400e;
+    font-size: 14px;
+    margin: 20px 0;
+    border: 2px solid #fde68a;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.info-message::before {
+    content: '⏰';
+    font-size: 20px;
+}
+
+/* Request Cards in Modals */
+.request-card {
+    background: var(--input-bg);
+    border-radius: var(--border-radius-md);
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 2px solid var(--border-color);
+    transition: all var(--transition-fast);
+}
+
+.request-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.request-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.request-title {
+    font-weight: 700;
+    color: var(--text-dark);
+    font-size: 16px;
+}
+
+.request-status {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.request-status.approved {
+    background: #d1fae5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+
+.request-status.rejected {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+
+.request-detail {
+    color: var(--text-light);
+    font-size: 14px;
+    margin: 8px 0;
+    line-height: 1.6;
+}
+
+.request-detail strong {
+    color: var(--text-medium);
+}
+
+.request-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+.request-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+/* Application Details */
+.application-details {
+    margin: 20px 0;
+    padding: 20px;
+    background: var(--input-bg);
+    border-radius: var(--border-radius-md);
+    border: 2px solid var(--border-color);
+}
+
+.application-details p {
+    margin-bottom: 12px;
+}
+
+.application-details strong {
+    color: var(--text-dark);
+    display: inline-block;
+    min-width: 100px;
+}
+
+/* Confirmation Dialog */
+.confirm-dialog {
+    text-align: center;
+    padding: 20px;
+}
+
+.confirm-dialog .icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.confirm-dialog.warning .icon {
+    color: var(--warning);
+}
+
+.confirm-dialog.error .icon {
+    color: var(--error);
+}
+
+.confirm-dialog.success .icon {
+    color: var(--success);
+}
+
+.confirm-dialog h3 {
+    color: var(--text-dark);
+    margin-bottom: 12px;
+}
+
+.confirm-dialog p {
+    color: var(--text-light);
+    margin-bottom: 24px;
+}
+
+/* Progress Modal */
+.progress-modal {
+    text-align: center;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--input-bg);
+    border-radius: 4px;
+    margin: 20px 0;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    border-radius: 4px;
+    transition: width var(--transition-normal);
+}
+
+.progress-text {
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .modal-content {
+        padding: 24px;
+    }
+    
+    .modal-header h2 {
+        font-size: 20px;
+    }
+    
+    .link-box {
+        flex-direction: column;
+    }
+    
+    .link-box button {
+        width: 100%;
+    }
+    
+    .request-actions {
+        flex-wrap: wrap;
+    }
+    
+    .request-actions button {
+        flex: 1;
+        min-width: 100px;
+    }
+}
+
+@media (max-width: 576px) {
+    .modal-content {
+        padding: 20px;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+    }
+    
+    .modal-actions button {
+        width: 100%;
+    }
+}
