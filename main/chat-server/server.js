@@ -15,26 +15,44 @@ app.set('prisma', prisma); // Make prisma accessible in routes
 const server = http.createServer(app);
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
-const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://localhost:5173',  // Vite learner-app
-    'http://localhost:5174',  // Vite admin-panel
-    process.env.LEARNER_APP_URL,
-    process.env.ADMIN_PANEL_URL
-].filter(Boolean);
+// Raw header middleware - runs FIRST before everything else.
+// This ensures CORS headers are present even during Render cold-start errors.
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    const isAllowed =
+        !origin ||
+        origin.endsWith('.vercel.app') ||
+        origin.endsWith('.onrender.com') ||
+        origin.startsWith('http://localhost');
 
+    if (isAllowed) {
+        res.setHeader('Access-Control-Allow-Origin', origin || '*');
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+    // Respond immediately to preflight OPTIONS requests
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(204);
+    }
+    next();
+});
+
+// cors() package as secondary layer
 app.use(cors({
     origin: (origin, cb) => {
         if (
             !origin ||
-            allowedOrigins.includes(origin) ||
-            origin.endsWith('.vercel.app') ||
-            origin.endsWith('.onrender.com')
+            (origin && (
+                origin.endsWith('.vercel.app') ||
+                origin.endsWith('.onrender.com') ||
+                origin.startsWith('http://localhost')
+            ))
         ) {
             return cb(null, true);
         }
-        cb(new Error('Not allowed by CORS'));
+        cb(null, false);
     },
     credentials: true
 }));
