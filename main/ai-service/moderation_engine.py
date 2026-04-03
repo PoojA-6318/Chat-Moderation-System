@@ -9,11 +9,12 @@ import toxicity
 import topic_detector
 import llm_layer
 import feedback as fb
+from typing import Dict
 
 
 class ModerationEngine:
 
-    async def validate(self, message: str, room_id: str, user_id: str) -> dict:
+    async def validate(self, message: str, room_id: str, user_id: str) -> Dict:
         """
         Run all 5 moderation layers in sequence.
         Returns a result dict consumed by Node.js chat server and stored in ViolationLog.

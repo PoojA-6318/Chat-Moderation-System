@@ -10,7 +10,7 @@ Endpoints:
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional,Dict,List
 import uvicorn
 import os
 from dotenv import load_dotenv
