@@ -2,6 +2,7 @@ import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
+from typing import List, Dict, Optional
 
 load_dotenv()
 
@@ -14,8 +15,6 @@ def get_connection():
         _connection = psycopg2.connect(os.getenv("DATABASE_URL"))
     return _connection
 
-
-from typing import Optional
 
 def get_room(room_id: str) -> Optional[dict]:
     """
