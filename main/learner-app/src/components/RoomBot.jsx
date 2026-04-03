@@ -19,7 +19,8 @@ export default function RoomBot({ roomId, roomTopic }) {
         setMsgs(m => [...m, { role: 'user', text }]);
         setLoading(true);
         try {
-            const { data } = await API.post('http://localhost:8000/chatbot', {
+            const aiUrl = import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:8000';
+            const { data } = await API.post(`${aiUrl}/chatbot`, {
                 message: text, room_id: roomId, mode: 'room', room_topic: roomTopic
             });
             setMsgs(m => [...m, { role: 'ai', text: data.response }]);

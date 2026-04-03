@@ -37,7 +37,7 @@ export default function Mentors() {
     // Helper to get absolute URL for certificates
     const getFileUrl = (path) => {
         if (!path) return null;
-        const baseUrl = 'http://localhost:5000'; // Adjust if your backend port is different
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000'; // Adjust if your backend port is different
         return `${baseUrl}${path}`;
     };
 

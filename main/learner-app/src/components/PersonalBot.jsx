@@ -19,7 +19,8 @@ export default function PersonalBot() {
         setMsgs(m => [...m, { role: 'user', text }]);
         setLoading(true);
         try {
-            const { data } = await API.post('http://localhost:8000/chatbot', {
+            const aiUrl = import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:8000';
+            const { data } = await API.post(`${aiUrl}/chatbot`, {
                 message: text, mode: 'personal'
             });
             setMsgs(m => [...m, { role: 'ai', text: data.response }]);
