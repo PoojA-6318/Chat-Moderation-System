@@ -16,7 +16,7 @@ def get_connection():
     return _connection
 
 
-def get_room(room_id: str) -> Optional[dict]:
+def get_room(room_id: str) -> Optional[Dict]:
     """
     Fetch a room by its UUID string.
     Returns dict with keys: topic, blocked_topics
@@ -29,7 +29,7 @@ def get_room(room_id: str) -> Optional[dict]:
             if not room:
                 return None
             return {
-                "topic":          room["topic"] or "",
+                "topic": room["topic"] or "",
                 "blocked_topics": room["blocked_topics"] or []
             }
     except Exception as e:
@@ -37,13 +37,7 @@ def get_room(room_id: str) -> Optional[dict]:
         return None
 
 
-def get_enabled_boundaries() -> list[dict]:
-    """
-    Fetch all boundary rules. (Assuming all are enabled if there's no is_enabled column, 
-    or we can add one if needed. In manual SQL I didn't add is_enabled, let's check).
-    """
-    # Note: In my manual SQL I didn't add an is_enabled column to keep it simple.
-    # I'll query all boundaries for now.
+def get_enabled_boundaries() -> List[Dict]:
     try:
         conn = get_connection()
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
@@ -51,9 +45,9 @@ def get_enabled_boundaries() -> list[dict]:
             rows = cur.fetchall()
             return [
                 {
-                    "category":     r["category"] or "",
-                    "keywords":     r["keywords"] or [],
-                    "patterns":     r["patterns"] or [],
+                    "category": r["category"] or "",
+                    "keywords": r["keywords"] or [],
+                    "patterns": r["patterns"] or [],
                     "feedback_msg": r["feedback_msg"] or "Please keep your message respectful."
                 }
                 for r in rows
@@ -62,10 +56,8 @@ def get_enabled_boundaries() -> list[dict]:
         print(f"[PG] get_enabled_boundaries error: {e}")
         return []
 
-def get_active_rooms() -> list[dict]:
-    """
-    Used for the personal assistant chatbot to list available rooms.
-    """
+
+def get_active_rooms() -> List[Dict]:
     try:
         conn = get_connection()
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
