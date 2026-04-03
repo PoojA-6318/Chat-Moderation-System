@@ -26,7 +26,14 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: (origin, cb) => {
-        if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+        if (
+            !origin ||
+            allowedOrigins.includes(origin) ||
+            origin.endsWith('.vercel.app') ||
+            origin.endsWith('.onrender.com')
+        ) {
+            return cb(null, true);
+        }
         cb(new Error('Not allowed by CORS'));
     },
     credentials: true
@@ -38,7 +45,17 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // ── Socket.io ─────────────────────────────────────────────────────────────────
 const io = new Server(server, {
     cors: {
-        origin: allowedOrigins,
+        origin: (origin, cb) => {
+            if (
+                !origin ||
+                allowedOrigins.includes(origin) ||
+                origin.endsWith('.vercel.app') ||
+                origin.endsWith('.onrender.com')
+            ) {
+                return cb(null, true);
+            }
+            cb(new Error('Not allowed by CORS'));
+        },
         methods: ['GET', 'POST'],
         credentials: true
     }
