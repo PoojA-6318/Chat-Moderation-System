@@ -15,7 +15,9 @@ def get_connection():
     return _connection
 
 
-def get_room(room_id: str) -> dict | None:
+from typing import Optional
+
+def get_room(room_id: str) -> Optional[dict]:
     """
     Fetch a room by its UUID string.
     Returns dict with keys: topic, blocked_topics
